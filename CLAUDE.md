@@ -59,6 +59,8 @@ Single-file HTML/Canvas-Spiel (j-thrust.html, ~178 KB).
 - `getFireRate()`: 300-difficulty*20 — Turret-Feuerrate
 - `getFuelRate()`: 0.3+difficulty*0.04 — Fuel-Verbrauch
 - `getTether()`: Classic: 40+(tether-1)*5, Mission: 30+difficulty*5
+- `getRot()`: cfg.rotation*0.015 — Basis-Drehrate (wird mit Rampe multipliziert)
+- **Rotations-Rampe**: `rotHoldL/rotHoldR` Zähler, Faktor `min(1, 0.3+hold*0.05)` — Antippen=30%, Halten=100% nach ~14 Frames
 
 ## Konstanten
 - SHIP_R=10, POD_R=8
