@@ -1170,6 +1170,34 @@ function hitTile(px,py,r){
 }
 
 const arenaWalls=[[[30,30],[770,30]],[[770,30],[770,570]],[[770,570],[30,570]],[[30,570],[30,30]]];
+const leviWalls=[[[770,0],[770,1170]],[[770,1170],[30,1170]],[[30,1170],[30,0]]];
+let basket={x:400,y:150,w:120,h:30};
+let leviLevel=0,leviRings=[],leviPath=[],leviRingIdx=0,leviPathIdx=0,leviProxTimer=0;
+let leviKeys={left:'ArrowLeft',right:'ArrowRight',thrust:'ArrowUp',shoot:'Space'};
+let leviKeyCfgStep=-1;
+const LEVI_KEY_ACTIONS=['left','right','thrust','shoot'];
+const LEVI_KEY_LABELS=['LINKS','RECHTS','GAS','SCHUSS'];
+try{let lk=localStorage.getItem('leviKeys');if(lk)leviKeys=JSON.parse(lk);}catch(e){}
+function keyName(code){
+  const map={ArrowLeft:'←',ArrowRight:'→',ArrowUp:'↑',ArrowDown:'↓',
+    Space:'LEERTASTE',Enter:'ENTER',ShiftLeft:'SHIFT L',ShiftRight:'SHIFT R',
+    ControlLeft:'STRG L',ControlRight:'STRG R'};
+  if(map[code])return map[code];
+  if(code.startsWith('Key'))return code.slice(3);
+  if(code.startsWith('Digit'))return code.slice(5);
+  return code;
+}
+let leviNumbers=[],leviNumIdx=0,leviLetters=[],leviLetterIdx=0,leviWord='',leviWrongTimer=0,leviSayCd=0;
+let leviWordCount=0,leviWordDone=0,leviWordGoal=3;
+const LEVI_WORDS=['LEVI','MAMA','PAPA','BALL','HAUS','BOOT','FISCH','STERN','HUND','AUTO','BAUM','MOND','KATZE','VOGEL','BLUME','SONNE','LAMPE','TIGER','WOLKE','NASE'];
+const LEVI_LEVELS=[
+  {n:'Fliegen üben',desc:'Steuere das Schiff zum Ziel!',type:'fly'},
+  {n:'Pod holen',desc:'Hol den Pod und bring ihn zum Korb!',type:'pod'},
+  {n:'Ringe fliegen',desc:'Flieg durch alle Ringe!',type:'rings'},
+  {n:'Pfad nachfahren',desc:'Folge der gepunkteten Linie!',type:'path'},
+  {n:'Zahlen-Jagd',desc:'Flieg die Zahlen 1-9 der Reihe nach an!',type:'numbers'},
+  {n:'Wort-Pilot',desc:'Höre das Wort und flieg die Buchstaben an!',type:'word'},
+];
 
 // === AUDIO ===
 let audio=null;
@@ -1364,6 +1392,79 @@ function initArena(){thrustSndKill();windSndKill();
   classicSwitches=[];classicDoors=[[],[]];switchTriggered=[false,false];
   invincible=120;makeStars(H);nextWave();state='playing';
 }
+function makeLeviRings(count){
+  leviRings=[];leviRingIdx=0;
+  for(let i=0;i<count;i++){
+    let y=900-i*(700/(count-1));
+    let x=200+Math.sin(i*1.2)*150+200;
+    leviRings.push({x,y,r:40,hit:false});
+  }
+}
+function makeLeviPath(count){
+  leviPath=[];leviPathIdx=0;
+  for(let i=0;i<count;i++){
+    let y=1000-i*(800/(count-1));
+    let x=400+Math.sin(i*0.8)*180;
+    leviPath.push({x,y,hit:false});
+  }
+}
+function makeLeviNumbers(){
+  leviNumbers=[];leviNumIdx=0;
+  for(let i=0;i<9;i++){
+    let y=1050-i*(900/8);
+    let x=100+Math.sin(i*1.1)*250+300;
+    leviNumbers.push({x,y,val:i+1,hit:false});
+  }
+}
+function makeLeviLetters(){
+  leviLetters=[];leviLetterIdx=0;
+  leviWord=LEVI_WORDS[Math.floor(Math.random()*LEVI_WORDS.length)];
+  // 26 alphabet letters in a circle
+  let abc='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let cx=400,cy=550,r=220;
+  for(let i=0;i<26;i++){
+    let a=-Math.PI/2+i*(Math.PI*2/26);
+    leviLetters.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,ch:abc[i]});
+  }
+}
+function leviSayWord(){
+  if(!('speechSynthesis' in window)||!leviWord)return;
+  speechSynthesis.cancel();
+  let u=new SpeechSynthesisUtterance(leviWord);
+  u.lang='de-DE';u.rate=0.7;u.pitch=1.1;
+  speechSynthesis.speak(u);leviSayCd=720;
+}
+function leviSayLetter(ch){
+  // Just beep — speechSynthesis says "Großbuchstabe" for uppercase
+  beep(800,0.08,'sine',0.05);
+}
+function initLevi(){thrustSndKill();windSndKill();
+  let ll=LEVI_LEVELS[leviLevel];
+  mode='levi';lives=99;score=0;
+  walls=leviWalls;lvlH=1200;
+  ship={x:400,y:1050,vx:0,vy:0,angle:0,fuel:9999,thrusting:false};
+  pod={x:-999,y:-999,vx:0,vy:0,attached:false};
+  if(ll.type==='pod'){pod={x:400,y:1050,vx:0,vy:0,attached:false};ship.y=200;}
+  // Basket for fly and pod levels
+  if(ll.type==='pod')basket={x:400,y:150,w:160,h:40};
+  else if(ll.type==='fly')basket={x:400,y:150,w:140,h:35};
+  // Rings
+  leviRings=[];leviRingIdx=0;
+  if(ll.type==='rings')makeLeviRings(5);
+  // Path
+  leviPath=[];leviPathIdx=0;
+  if(ll.type==='path')makeLeviPath(20);
+  // Numbers
+  leviNumbers=[];leviNumIdx=0;
+  if(ll.type==='numbers')makeLeviNumbers();
+  // Word
+  leviLetters=[];leviLetterIdx=0;leviWord='';leviSayCd=30;leviWordCount=0;leviWordDone=0;
+  if(ll.type==='word')makeLeviLetters();
+  leviProxTimer=0;leviWrongTimer=0;
+  cam={y:0};particles=[];bullets=[];enemies=[];eBullets=[];turrets=[];depots=[];classicFuels=[];tileGrid=null;classicLv=null;
+  classicSwitches=[];classicDoors=[[],[]];switchTriggered=[false,false];
+  podGrace=0;invincible=0;makeStars(lvlH);state='playing';
+}
 function nextWave(){wave++;waveTimer=90;waveSpawned=false;}
 function spawnEnemy(){
   let x,y,s=Math.floor(Math.random()*4);
@@ -1376,12 +1477,37 @@ function spawnEnemy(){
 document.addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(state==='title'){
-    if(e.code==='ArrowUp')menuSel=(menuSel+2)%3;
-    else if(e.code==='ArrowDown')menuSel=(menuSel+1)%3;
+    if(e.code==='ArrowUp')menuSel=(menuSel+3)%4;
+    else if(e.code==='ArrowDown')menuSel=(menuSel+1)%4;
     else if(e.code==='Space'||e.code==='Enter'){
       if(menuSel===0){lvlSel=0;state='levelselect';}
-      else if(menuSel===1)initArena();else state='settings';
+      else if(menuSel===1)initArena();
+      else if(menuSel===2){leviLevel=0;state='levikeyconfig';leviKeyCfgStep=-1;}
+      else state='settings';
     }
+  }else if(state==='levikeyconfig'){
+    if(leviKeyCfgStep===-1){
+      if(e.code==='Enter'){state='levilevelselect';}
+      else if(e.code==='Space'){leviKeyCfgStep=0;}
+      else if(e.code==='Escape'||e.code==='Backspace'){state='title';}
+    }else{
+      if(e.code==='Escape'){leviKeyCfgStep=-1;}
+      else{
+        leviKeys[LEVI_KEY_ACTIONS[leviKeyCfgStep]]=e.code;
+        beep(600+leviKeyCfgStep*100,0.1,'sine',0.06);
+        leviKeyCfgStep++;
+        if(leviKeyCfgStep>=4){
+          try{localStorage.setItem('leviKeys',JSON.stringify(leviKeys));}catch(ex){}
+          leviKeyCfgStep=-1;state='levilevelselect';
+          beep(880,0.2,'sine',0.08);
+        }
+      }
+    }
+  }else if(state==='levilevelselect'){
+    if(e.code==='ArrowUp')leviLevel=(leviLevel+5)%6;
+    else if(e.code==='ArrowDown')leviLevel=(leviLevel+1)%6;
+    else if(e.code==='Space'||e.code==='Enter')initLevi();
+    else if(e.code==='Escape'||e.code==='Backspace')state='title';
   }else if(state==='levelselect'){
     if(e.code==='ArrowUp')lvlSel=(lvlSel+CL.length-1)%CL.length;
     else if(e.code==='ArrowDown')lvlSel=(lvlSel+1)%CL.length;
@@ -1419,22 +1545,26 @@ document.addEventListener('keydown',e=>{
     else if(e.code==='Escape'||e.code==='Backspace')state='title';
     saveCfg();
     }
-  }else if(e.code==='Space'){
-    if(state==='dead'){
-      if(mode==='arena'){ship.x=400;ship.y=300;ship.vx=0;ship.vy=0;ship.angle=0;invincible=120;state='playing';}
-      else if(mode==='classic')loadClassicLevel();
-    }
-    else if(state==='gameover')state='title';
-    else if(state==='won'){score+=Math.floor(ship.fuel/2);level++;
-      if(level>=CL.length)state='complete';
-      else loadClassicLevel();
-    }
-    else if(state==='complete')state='title';
-  }else if(e.code==='Escape'&&(state==='playing'||state==='dead')){state='paused';pauseSel=0;}
-  else if(state==='paused'){
+  }else if(state==='paused'){
     if(e.code==='ArrowLeft'||e.code==='ArrowRight')pauseSel=1-pauseSel;
     else if(e.code==='Enter'||e.code==='Space'){if(pauseSel===0)state='playing';else{thrustSndKill();windSndKill();state='title';}}
     else if(e.code==='Escape')state='playing';
+  }else if(e.code==='Escape'&&state==='won'&&mode==='levi'){thrustSndKill();windSndKill();state='title';}
+  else if(e.code==='Escape'&&(state==='playing'||state==='dead')){state='paused';pauseSel=0;}
+  else if(e.code==='Space'||e.code==='Enter'){
+    if(state==='dead'){
+      if(mode==='arena'){ship.x=400;ship.y=300;ship.vx=0;ship.vy=0;ship.angle=0;invincible=120;state='playing';}
+      else if(mode==='levi')initLevi();
+      else if(mode==='classic')loadClassicLevel();
+    }
+    else if(state==='gameover')state='title';
+    else if(state==='won'){
+      if(mode==='levi'){if(leviLevel<5){leviLevel++;initLevi();}else{leviLevel=0;initLevi();}}
+      else{score+=Math.floor(ship.fuel/2);level++;
+        if(level>=CL.length)state='complete';
+        else loadClassicLevel();}
+    }
+    else if(state==='complete')state='title';
   }
   e.preventDefault();
 });
@@ -1447,18 +1577,23 @@ return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));}
 
 function hitWall(x,y,r){
   if(mode==='classic')return hitTile(x,y,r);
+  if(mode==='levi')return false;// Levi: no wall death
   for(let w of walls)for(let i=0;i<w.length-1;i++)if(ptSeg(x,y,w[i][0],w[i][1],w[i+1][0],w[i+1][1])<r)return true;
   return false;
 }
 
 // === SHIP UPDATE ===
 function updateShip(){
-  if(keys['ArrowLeft']){rotHoldL++;ship.angle-=getRot()*Math.min(1,0.3+rotHoldL*0.05);}else{rotHoldL=0;}
-  if(keys['ArrowRight']){rotHoldR++;ship.angle+=getRot()*Math.min(1,0.3+rotHoldR*0.05);}else{rotHoldR=0;}
-  ship.thrusting=!!keys['ArrowUp']&&ship.fuel>0;
+  let kLeft=mode==='levi'?leviKeys.left:'ArrowLeft';
+  let kRight=mode==='levi'?leviKeys.right:'ArrowRight';
+  let kThrust=mode==='levi'?leviKeys.thrust:'ArrowUp';
+  let kShoot=mode==='levi'?leviKeys.shoot:'Space';
+  if(keys[kLeft]){rotHoldL++;ship.angle-=getRot()*Math.min(1,0.3+rotHoldL*0.05);}else{rotHoldL=0;}
+  if(keys[kRight]){rotHoldR++;ship.angle+=getRot()*Math.min(1,0.3+rotHoldR*0.05);}else{rotHoldR=0;}
+  ship.thrusting=!!keys[kThrust]&&ship.fuel>0;
   if(ship.thrusting){
     ship.vx+=Math.sin(ship.angle)*getThrust();ship.vy-=Math.cos(ship.angle)*getThrust();
-    if(mode!=='arena')ship.fuel-=getFuelRate();
+    if(mode!=='arena'&&mode!=='levi')ship.fuel-=getFuelRate();
     let ex=ship.x-Math.sin(ship.angle)*SHIP_R,ey=ship.y+Math.cos(ship.angle)*SHIP_R;
     for(let i=0;i<2;i++)particles.push({x:ex+(Math.random()-0.5)*4,y:ey+(Math.random()-0.5)*4,
       vx:-Math.sin(ship.angle)*(1.5+Math.random()*2)+(Math.random()-0.5)*0.5,
@@ -1467,7 +1602,7 @@ function updateShip(){
   }else{thrustSndOff();}
 
   // Shoot
-  if(keys['Space']&&state==='playing'&&shootCooldown<=0){
+  if(keys[kShoot]&&state==='playing'&&shootCooldown<=0){
     bullets.push({x:ship.x+Math.sin(ship.angle)*SHIP_R*1.2,y:ship.y-Math.cos(ship.angle)*SHIP_R*1.2,
       vx:Math.sin(ship.angle)*6+ship.vx*0.3,vy:-Math.cos(ship.angle)*6+ship.vy*0.3,life:60});
     shootCooldown=8;pew();
@@ -1706,10 +1841,195 @@ function updateArena(){
   if(ship.y<35)ship.y=35;if(ship.y>565)ship.y=565;
 }
 
+function leviWin(){
+  state='won';
+  beep(523,0.2,'sine',0.08);setTimeout(()=>beep(659,0.2,'sine',0.08),180);
+  setTimeout(()=>beep(784,0.2,'sine',0.08),360);setTimeout(()=>beep(1047,0.4,'sine',0.08),540);
+  let cnt=leviLevel===5?100:60;
+  let cx=ship.x,cy=ship.y;
+  if(LEVI_LEVELS[leviLevel].type==='pod')cx=basket.x,cy=basket.y;
+  for(let i=0;i<cnt;i++){let a=Math.random()*Math.PI*2,s=1+Math.random()*3;
+    particles.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,life:60+Math.random()*40,type:'f'});}
+  if(leviLevel===5){setTimeout(()=>beep(1047,0.3,'sine',0.1),700);setTimeout(()=>beep(1319,0.4,'sine',0.1),900);
+    setTimeout(()=>{if('speechSynthesis' in window)speechSynthesis.cancel();},1500);
+    setTimeout(()=>{
+      if(!('speechSynthesis' in window)||!leviWord)return;
+      let u=new SpeechSynthesisUtterance(leviWord);
+      u.lang='de-DE';u.rate=0.6;u.pitch=1.0;u.volume=1.0;
+      speechSynthesis.speak(u);
+    },2000);}
+
+}
+function updateLevi(){
+  let ll=LEVI_LEVELS[leviLevel],tp=ll.type;
+  updateShip();
+  // Gravity reduction for Levi (30% less)
+  ship.vy-=getGrav()*0.3;
+  if(leviWrongTimer>0)leviWrongTimer--;else if(leviWrongTimer<0)leviWrongTimer++;
+  // Pod physics
+  if(tp==='pod'&&pod.attached){
+    if(podGrace>0){podGrace--;pod.vy+=getGrav()*0.3;}
+    else pod.vy+=getGrav()*0.7;
+    pod.x+=pod.vx;pod.y+=pod.vy;
+    pod.vx*=getDrag();pod.vy*=getDrag();
+    let dx=pod.x-ship.x,dy=pod.y-ship.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist>getTether()){let nx=dx/dist,ny=dy/dist,diff=dist-getTether();
+      ship.x+=nx*diff*0.35;ship.y+=ny*diff*0.35;pod.x-=nx*diff*0.65;pod.y-=ny*diff*0.65;
+      let rv=(pod.vx-ship.vx)*nx+(pod.vy-ship.vy)*ny;
+      if(rv>0){ship.vx+=nx*rv*0.35;ship.vy+=ny*rv*0.35;pod.vx-=nx*rv*0.65;pod.vy-=ny*rv*0.65;}}
+    if(pod.x<40){pod.x=40;pod.vx=Math.abs(pod.vx)*0.3;}
+    if(pod.x>760){pod.x=760;pod.vx=-Math.abs(pod.vx)*0.3;}
+    if(pod.y>lvlH-40){pod.y=lvlH-40;pod.vy=-Math.abs(pod.vy)*0.3;}
+  }
+  // Pod pickup
+  if(tp==='pod'&&!pod.attached){
+    if(Math.hypot(ship.x-pod.x,ship.y-pod.y)<50){
+      pod.attached=true;pod.vx=0;pod.vy=-0.5;podGrace=120;
+      beep(440,0.15,'sine',0.06);setTimeout(()=>beep(660,0.15,'sine',0.06),120);setTimeout(()=>beep(880,0.2,'sine',0.06),250);
+    }
+  }
+  // Ring check
+  if(tp==='rings'){
+    for(let i=0;i<leviRings.length;i++){
+      let ring=leviRings[i];
+      if(!ring.hit&&Math.hypot(ship.x-ring.x,ship.y-ring.y)<ring.r){
+        ring.hit=true;leviRingIdx++;
+        beep(600+i*100,0.15,'sine',0.07);
+      }
+    }
+  }
+  // Path check (sequential)
+  if(tp==='path'&&leviPathIdx<leviPath.length){
+    let wp=leviPath[leviPathIdx];
+    if(Math.hypot(ship.x-wp.x,ship.y-wp.y)<30){
+      wp.hit=true;leviPathIdx++;
+      beep(400+leviPathIdx*30,0.1,'sine',0.05);
+    }
+  }
+  // Proximity feedback
+  if(tp==='pod'&&pod.attached){
+    leviProxTimer++;
+    if(leviProxTimer%15===0){
+      let dist=Math.hypot(pod.x-basket.x,pod.y-basket.y);
+      let freq=300+(1-Math.min(1,dist/1000))*700;
+      beep(freq,0.05,'sine',0.03);
+    }
+  }
+  // Numbers check (sequential — wrong number = warning)
+  if(tp==='numbers'){
+    for(let i=0;i<leviNumbers.length;i++){
+      let num=leviNumbers[i];
+      if(!num.hit&&Math.hypot(ship.x-num.x,ship.y-num.y)<35){
+        if(i===leviNumIdx){
+          num.hit=true;leviNumIdx++;
+          beep(400+i*80,0.15,'sine',0.07);
+          // Mini confetti on each number
+          for(let j=0;j<8;j++){let a=Math.random()*Math.PI*2,s=0.5+Math.random()*1.5;
+            particles.push({x:num.x,y:num.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:25+Math.random()*15,type:'f'});}
+        }else{
+          // Wrong number — warning beep + flash
+          leviWrongTimer=30;
+          beep(150,0.2,'square',0.06);
+        }
+      }
+    }
+  }
+  // Word: alphabet grid — find the right letter by ear
+  if(tp==='word'&&leviLetterIdx<leviWord.length&&leviWordDone===0){
+    let targetCh=leviWord[leviLetterIdx];
+    // Auto-repeat word every ~12s, or H key to hear again
+    leviSayCd--;
+    if(leviSayCd<=0||(keys['KeyH']&&leviSayCd<600)){leviSayWord();}
+    // Helper: check if a letter was hit (by ship or bullet)
+    let hitThisFrame=false;
+    function hitLetter(lt){
+      leviLetterIdx++;hitThisFrame=true;
+      beep(500+leviLetterIdx*60,0.15,'sine',0.07);
+      if(leviLetterIdx<leviWord.length)leviSayLetter(lt.ch);
+      // Grace period: suppress wrong-letter flash for 20 frames
+      leviWrongTimer=-20;
+      for(let j=0;j<10;j++){let a=Math.random()*Math.PI*2,s=0.5+Math.random()*1.5;
+        particles.push({x:lt.x,y:lt.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:25+Math.random()*15,type:'f'});}
+    }
+    // Ship flies into letter
+    for(let lt of leviLetters){
+      if(Math.hypot(ship.x-lt.x,ship.y-lt.y)<28){
+        if(lt.ch===targetCh){hitLetter(lt);break;}
+        else if(leviWrongTimer===0){leviWrongTimer=30;beep(150,0.2,'square',0.06);}
+      }
+    }
+    // Bullet hits letter
+    if(!hitThisFrame){
+      for(let i=bullets.length-1;i>=0;i--){
+        let b=bullets[i],hitAny=false;
+        for(let lt of leviLetters){
+          if(Math.hypot(b.x-lt.x,b.y-lt.y)<24){
+            if(lt.ch===targetCh){hitLetter(lt);}
+            else if(leviWrongTimer===0){leviWrongTimer=30;beep(150,0.2,'square',0.06);}
+            bullets.splice(i,1);hitAny=true;break;
+          }
+        }
+        if(hitAny)break;
+      }
+    }
+  }
+  // Win conditions per level type
+  if(tp==='pod'){
+    if(pod.attached){
+      let bx=basket.x,by=basket.y,bw=basket.w,bh=basket.h;
+      if(pod.x>bx-bw/2&&pod.x<bx+bw/2&&pod.y>by-bh/2&&pod.y<by+bh/2){
+        let spd=Math.hypot(pod.vx,pod.vy)+Math.hypot(ship.vx,ship.vy);
+        if(spd<2.5){leviWin();return;}
+      }
+    }
+  }else if(tp==='fly'){
+    let bx=basket.x,by=basket.y,bw=basket.w,bh=basket.h;
+    if(ship.x>bx-bw/2&&ship.x<bx+bw/2&&ship.y>by-bh/2&&ship.y<by+bh/2){
+      if(Math.hypot(ship.vx,ship.vy)<2.5){leviWin();return;}
+    }
+  }else if(tp==='rings'){
+    if(leviRings.every(r=>r.hit)){leviWin();return;}
+  }else if(tp==='path'){
+    if(leviPathIdx>=leviPath.length){leviWin();return;}
+  }else if(tp==='numbers'){
+    if(leviNumIdx>=leviNumbers.length){leviWin();return;}
+  }else if(tp==='word'){
+    // Word done → celebrate, then next word or win
+    if(leviWordDone>0){
+      leviWordDone--;
+      if(leviWordDone===0){
+        if(leviWordCount>=leviWordGoal){leviWin();return;}
+        // Pick new word (avoid same)
+        let prev=leviWord,tries=0;
+        do{leviWord=LEVI_WORDS[Math.floor(Math.random()*LEVI_WORDS.length)];tries++;}
+        while(leviWord===prev&&tries<20);
+        leviLetterIdx=0;leviSayCd=30;leviWrongTimer=0;
+      }
+    }else if(leviLetterIdx>=leviWord.length){
+      // Word complete!
+      leviWordCount++;leviWordDone=150;
+      // Speak the completed word
+      if('speechSynthesis' in window){speechSynthesis.cancel();
+        let u=new SpeechSynthesisUtterance(leviWord);u.lang='de-DE';u.rate=0.6;u.pitch=1.0;
+        speechSynthesis.speak(u);}
+      // Mini confetti
+      for(let j=0;j<30;j++){let a=Math.random()*Math.PI*2,s=0.5+Math.random()*2;
+        particles.push({x:ship.x,y:ship.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:40+Math.random()*20,type:'f'});}
+      beep(800,0.2,'sine',0.08);setTimeout(()=>beep(1000,0.2,'sine',0.08),150);
+    }
+  }
+  // Ship wall bounce (soft, no death)
+  if(ship.x<40){ship.x=40;ship.vx=Math.abs(ship.vx)*0.3;}
+  if(ship.x>760){ship.x=760;ship.vx=-Math.abs(ship.vx)*0.3;}
+  if(ship.y>lvlH-40){ship.y=lvlH-40;ship.vy=-Math.abs(ship.vy)*0.3;}
+  // Camera follow
+  let ty=Math.max(-H*0.4,Math.min(ship.y-H*0.4,lvlH-H));
+  cam.y+=(ty-cam.y)*0.08;
+}
 function update(){
   if(saveFeedback>0)saveFeedback--;
   if(state!=='playing'){thrustSndOff();windSndKill();updateParticles();return;}
-  if(mode==='classic')updateClassic();else updateArena();
+  if(mode==='classic')updateClassic();else if(mode==='levi')updateLevi();else updateArena();
   updateParticles();
 }
 function updateParticles(){for(let i=particles.length-1;i>=0;i--){let p=particles[i];
@@ -1724,6 +2044,8 @@ function render(){
   if(state==='splash'){renderSplash();return;}
   if(state==='title'){renderTitle();return;}
   if(state==='levelselect'){renderLevelSelect();return;}
+  if(state==='levikeyconfig'){renderLeviKeyConfig();return;}
+  if(state==='levilevelselect'){renderLeviLevelSelect();return;}
   if(state==='settings'){renderSettings();return;}
   if(state==='complete'){renderComplete();return;}
 
@@ -1834,6 +2156,99 @@ function render(){
     $.shadowBlur=0;
   }
 
+  // Levi elements
+  if(mode==='levi'){
+    let ll=LEVI_LEVELS[leviLevel],tp=ll.type;
+    let pulse=0.5+0.5*Math.sin(Date.now()*0.003);
+    // Basket (show for pod and fly levels)
+    if(tp==='pod'||tp==='fly'){
+      let bx=basket.x,by=basket.y,bw=basket.w,bh=basket.h;
+      $.strokeStyle=`rgba(255,255,0,${0.4+pulse*0.4})`;$.lineWidth=3;
+      $.shadowColor='#ff0';$.shadowBlur=8+pulse*6;
+      $.beginPath();
+      $.moveTo(bx-bw/2,by-bh/2);$.lineTo(bx-bw/2,by+bh/2);
+      $.lineTo(bx+bw/2,by+bh/2);$.lineTo(bx+bw/2,by-bh/2);
+      $.stroke();$.shadowBlur=0;
+      $.fillStyle=`rgba(255,255,0,${0.5+pulse*0.3})`;$.font='bold 10px monospace';$.textAlign='center';
+      $.fillText('ZIEL',bx,by+bh/2+14);$.textAlign='left';
+    }
+    // Rings
+    if(tp==='rings'){
+      for(let i=0;i<leviRings.length;i++){
+        let ring=leviRings[i];
+        if(ring.hit){
+          $.strokeStyle='rgba(0,255,0,0.6)';$.lineWidth=2;$.shadowColor='#0f0';$.shadowBlur=4;
+        }else{
+          let isNext=(i===leviRingIdx);
+          let rp=isNext?0.7+0.3*Math.sin(Date.now()*0.006):0.3+0.2*Math.sin(Date.now()*0.003);
+          $.strokeStyle=`rgba(255,255,0,${rp})`;$.lineWidth=isNext?3:2;
+          $.shadowColor='#ff0';$.shadowBlur=isNext?12+pulse*8:4;
+        }
+        $.beginPath();$.arc(ring.x,ring.y,ring.r,0,Math.PI*2);$.stroke();
+        $.shadowBlur=0;
+        if(!ring.hit){
+          $.fillStyle='rgba(255,255,0,0.15)';$.beginPath();$.arc(ring.x,ring.y,ring.r,0,Math.PI*2);$.fill();
+        }
+        $.fillStyle=ring.hit?'#0f0':'#ff0';$.font='bold 12px monospace';$.textAlign='center';
+        $.fillText(''+(i+1),ring.x,ring.y+4);$.textAlign='left';
+      }
+    }
+    // Path
+    if(tp==='path'&&leviPath.length>0){
+      $.save();$.setLineDash([5,5]);$.lineWidth=1;
+      for(let i=0;i<leviPath.length-1;i++){
+        let a=leviPath[i],b=leviPath[i+1];
+        $.strokeStyle=(a.hit&&b.hit)?'rgba(0,255,0,0.3)':'rgba(255,255,0,0.2)';
+        $.beginPath();$.moveTo(a.x,a.y);$.lineTo(b.x,b.y);$.stroke();
+      }
+      $.setLineDash([]);$.restore();
+      for(let i=0;i<leviPath.length;i++){
+        let wp=leviPath[i],isNext=(i===leviPathIdx);
+        if(wp.hit)$.fillStyle='rgba(0,255,0,0.6)';
+        else $.fillStyle=isNext?`rgba(255,255,0,${0.5+0.5*Math.sin(Date.now()*0.006)})`:'rgba(255,255,0,0.3)';
+        $.beginPath();$.arc(wp.x,wp.y,isNext?8:5,0,Math.PI*2);$.fill();
+      }
+    }
+    // Numbers (Zahlen-Jagd)
+    if(tp==='numbers'){
+      for(let i=0;i<leviNumbers.length;i++){
+        let num=leviNumbers[i],isNext=(i===leviNumIdx);
+        let sz=isNext?28:22;
+        if(num.hit){
+          $.strokeStyle='rgba(0,255,0,0.5)';$.lineWidth=2;$.shadowColor='#0f0';$.shadowBlur=3;
+        }else if(isNext){
+          let np=0.7+0.3*Math.sin(Date.now()*0.005);
+          $.strokeStyle=`rgba(0,255,255,${np})`;$.lineWidth=3;
+          $.shadowColor='#0ff';$.shadowBlur=10+pulse*8;
+        }else{
+          $.strokeStyle='rgba(255,255,0,0.3)';$.lineWidth=1.5;$.shadowColor='#ff0';$.shadowBlur=2;
+        }
+        $.beginPath();$.arc(num.x,num.y,sz,0,Math.PI*2);$.stroke();
+        if(!num.hit&&isNext){$.fillStyle='rgba(0,255,255,0.1)';$.beginPath();$.arc(num.x,num.y,sz,0,Math.PI*2);$.fill();}
+        $.shadowBlur=0;
+        $.fillStyle=num.hit?'#0f0':isNext?'#0ff':'#ff0';
+        $.font='bold '+(isNext?22:18)+'px monospace';$.textAlign='center';
+        $.fillText(''+num.val,num.x,num.y+(isNext?8:6));$.textAlign='left';
+      }
+      // Wrong-number flash
+      if(leviWrongTimer>0){
+        $.fillStyle=`rgba(255,0,0,${leviWrongTimer/30*0.3})`;$.fillRect(0,0,800,1200);
+      }
+    }
+    // Letters (Wort-Pilot) — all letters look the same, no hint!
+    if(tp==='word'){
+      for(let lt of leviLetters){
+        $.strokeStyle='rgba(140,160,140,0.5)';$.lineWidth=1.5;$.shadowBlur=0;
+        $.beginPath();$.arc(lt.x,lt.y,22,0,Math.PI*2);$.stroke();
+        $.fillStyle='#8a8';$.font='bold 18px monospace';$.textAlign='center';
+        $.fillText(lt.ch,lt.x,lt.y+6);$.textAlign='left';
+      }
+      if(leviWrongTimer>0){
+        $.fillStyle=`rgba(255,0,0,${leviWrongTimer/30*0.3})`;$.fillRect(0,0,800,1200);
+      }
+    }
+  }
+
   // Classic fuel depots
   if(mode==='classic'){
     for(let d of classicFuels){
@@ -1877,13 +2292,13 @@ function render(){
   $.shadowBlur=0;
 
   // Pod glow
-  if(mode!=='arena'&&!pod.attached&&state==='playing'){
+  if(mode!=='arena'&&!(mode==='levi'&&LEVI_LEVELS[leviLevel].type!=='pod')&&!pod.attached&&state==='playing'){
     let pulse=0.5+0.5*Math.sin(Date.now()*0.005);
     $.strokeStyle=`rgba(255,128,0,${0.3+pulse*0.4})`;$.lineWidth=1;
     $.beginPath();$.arc(pod.x,pod.y,18+pulse*5,0,Math.PI*2);$.stroke();
   }
   // Pod (round)
-  if(mode!=='arena'){
+  if(mode!=='arena'&&!(mode==='levi'&&LEVI_LEVELS[leviLevel].type!=='pod')){
     $.strokeStyle=pod.attached?'#0ff':'#f80';$.lineWidth=2;
     $.shadowColor=pod.attached?'#0ff':'#f80';$.shadowBlur=4;
     $.beginPath();$.arc(pod.x,pod.y,POD_R,0,Math.PI*2);$.stroke();
@@ -1951,7 +2366,30 @@ function render(){
   else if(state==='gameover'){
     if(mode==='arena')overlay('GAME OVER','Score: '+score+' | Welle '+wave,'Leertaste für Menü');
     else overlay('GAME OVER','Score: '+score,'Leertaste für Menü');
-  }else if(state==='won')overlay('MISSION '+(level+1)+' COMPLETE!','Score: '+score,'Leertaste weiter');
+  }else if(state==='won'){
+    if(mode==='levi'){
+      let ll=LEVI_LEVELS[leviLevel];
+      $.fillStyle='rgba(0,0,0,0.6)';$.fillRect(0,H/2-110,W,220);$.textAlign='center';
+      $.fillStyle='#ff0';$.shadowColor='#ff0';$.shadowBlur=12;
+      if(leviLevel===5){
+        $.font='bold 40px monospace';$.fillText('MEISTER, LEVI!',W/2,H/2-40);
+        $.shadowBlur=0;
+        // Show the completed word big
+        $.fillStyle='#0ff';$.font='bold 32px monospace';$.fillText(leviWord,W/2,H/2+5);
+      }else{
+        $.font='bold 36px monospace';$.fillText('SUPER, LEVI!',W/2,H/2-35);
+        $.shadowBlur=0;
+      }
+      $.fillStyle='#0f0';$.font='16px monospace';$.fillText(ll.n+' geschafft!',W/2,H/2+30);
+      if(leviLevel<5){
+        $.fillStyle='#0a0';$.font='14px monospace';$.fillText('Leertaste = Nächstes Level | ESC = Menü',W/2,H/2+60);
+      }else{
+        $.fillStyle='#0ff';$.font='14px monospace';$.fillText('Alle 6 Level gemeistert!',W/2,H/2+55);
+        $.fillStyle='#0a0';$.font='14px monospace';$.fillText('Leertaste = Nochmal | ESC = Menü',W/2,H/2+75);
+      }
+      $.textAlign='left';
+    }else overlay('MISSION '+(level+1)+' COMPLETE!','Score: '+score,'Leertaste weiter');
+  }
   if(mode==='arena'&&state==='playing'&&waveTimer>0){
     $.textAlign='center';$.fillStyle='#ff0';$.shadowColor='#ff0';$.shadowBlur=8;
     $.font='bold 28px monospace';$.fillText('WELLE '+wave,W/2,H/2-20);
@@ -1981,11 +2419,12 @@ function renderHUD(){
 
   $.fillStyle='#0a0';$.font='10px monospace';$.textAlign='center';
   if(mode==='arena')$.fillText('ARENA | WELLE '+wave,W/2,H-8);
+  else if(mode==='levi')$.fillText('LEVI '+(leviLevel+1)+': '+LEVI_LEVELS[leviLevel].n,W/2,H-8);
   else $.fillText('KLASSIK '+(level+1)+': '+lv.n,W/2,H-8);
   $.textAlign='left';
 
   // Fuel
-  if(mode!=='arena'){
+  if(mode!=='arena'&&mode!=='levi'){
     let maxF=1200;
     $.fillStyle='#222';$.fillRect(10,10,150,12);
     let fr=Math.max(0,ship.fuel/maxF);
@@ -1995,17 +2434,49 @@ function renderHUD(){
     $.fillStyle='#0f0';$.font='10px monospace';$.fillText('FUEL',165,20);
   }
 
-  let ly=mode==='arena'?50:(cfg.strafe===2?50:42);
-  let lx=mode==='arena'?42:20;
-  for(let i=0;i<lives;i++){$.save();$.translate(lx+i*22,ly);$.strokeStyle='#0f0';$.lineWidth=1.5;
-    $.beginPath();$.moveTo(0,-5);$.lineTo(-4,4);$.lineTo(4,4);$.closePath();$.stroke();$.restore();}
+  if(mode!=='levi'){
+    let ly=mode==='arena'?50:(cfg.strafe===2?50:42);
+    let lx=mode==='arena'?42:20;
+    for(let i=0;i<lives;i++){$.save();$.translate(lx+i*22,ly);$.strokeStyle='#0f0';$.lineWidth=1.5;
+      $.beginPath();$.moveTo(0,-5);$.lineTo(-4,4);$.lineTo(4,4);$.closePath();$.stroke();$.restore();}
 
-  $.fillStyle='#0f0';$.font='14px monospace';$.textAlign='right';
-  $.fillText('SCORE '+String(score).padStart(6,'0'),W-10,22);$.textAlign='left';
+    $.fillStyle='#0f0';$.font='14px monospace';$.textAlign='right';
+    $.fillText('SCORE '+String(score).padStart(6,'0'),W-10,22);$.textAlign='left';
+  }
 
   $.fillStyle='#0a0';$.font='10px monospace';
   {const spd=Math.hypot(ship.vx,ship.vy);const spdTxt='SPD '+spd.toFixed(1);
-  if(mode==='arena'){$.fillText(spdTxt,W-80,42);$.fillText('WELLE '+wave,W-80,64);}
+  if(mode==='levi'){
+    let tp=LEVI_LEVELS[leviLevel].type;
+    // Numbers: show progress "3/9"
+    if(tp==='numbers'){$.fillStyle='#0ff';$.font='bold 14px monospace';$.textAlign='center';
+      $.fillText(leviNumIdx+' / '+leviNumbers.length,W/2,40);$.textAlign='left';}
+    // Word: show collected letters + underscores + word counter
+    if(tp==='word'&&leviWord){
+      // Word counter top-right
+      $.fillStyle='#0a0';$.font='12px monospace';$.textAlign='right';
+      $.fillText('Wort '+leviWordCount+'/'+leviWordGoal,W-10,20);$.textAlign='center';
+      if(leviWordDone>0){
+        // Between words: show completed word big
+        $.fillStyle='#0f0';$.shadowColor='#0f0';$.shadowBlur=8;
+        $.font='bold 36px monospace';$.fillText(leviWord,W/2,42);$.shadowBlur=0;
+      }else{
+        $.font='bold 28px monospace';
+        let spacing=30,wx=W/2-(leviWord.length*spacing)/2+spacing/2;
+        for(let i=0;i<leviWord.length;i++){
+          if(i<leviLetterIdx){
+            $.fillStyle='#0f0';$.shadowColor='#0f0';$.shadowBlur=4;
+            $.fillText(leviWord[i],wx+i*spacing,42);$.shadowBlur=0;
+          }else{
+            $.fillStyle='#444';$.fillText('_',wx+i*spacing,42);
+          }
+        }
+        $.fillStyle='rgba(0,255,255,0.4)';$.font='10px monospace';
+        $.fillText('H = Wort hören | SPACE = Schießen',W/2,60);
+      }
+      $.textAlign='left';}
+  }
+  else if(mode==='arena'){$.fillText(spdTxt,W-80,42);$.fillText('WELLE '+wave,W-80,64);}
   else{$.fillText('ALT '+Math.max(0,Math.floor((lvlH-ship.y)/10)),W-80,42);$.fillText(spdTxt,W-80,55);}
   // Colored SPD overlay when fast
   const spdY=mode==='arena'?42:55;
@@ -2025,10 +2496,11 @@ function renderHUD(){
     $.fillStyle='#0f0';$.font='10px monospace';$.fillText('FLOW',165,flowY+9);
   }}
 
-  if(mode!=='arena'&&pod.attached){$.fillStyle='#0ff';$.font='12px monospace';$.textAlign='center';$.fillText('POD ATTACHED',W/2,22);$.textAlign='left';}
+  if(mode!=='arena'&&pod.attached&&!(mode==='levi'&&LEVI_LEVELS[leviLevel].type!=='pod')){$.fillStyle='#0ff';$.font='12px monospace';$.textAlign='center';
+    $.fillText(mode==='levi'?'POD AM SEIL':'POD ATTACHED',W/2,22);$.textAlign='left';}
 
   // Off-screen indicators
-  if(mode!=='arena'&&state==='playing'){
+  if(mode==='classic'&&state==='playing'){
     if(!pod.attached){let py=pod.y-cam.y;
       if(py>H){$.fillStyle='#f80';$.textAlign='center';$.font='10px monospace';
         $.beginPath();$.moveTo(W/2-6,H-28);$.lineTo(W/2+6,H-28);$.lineTo(W/2,H-18);$.fill();
@@ -2042,7 +2514,17 @@ function renderHUD(){
     }
   }
 
-  if(state==='playing'&&((mode==='classic'&&!pod.attached&&ship.y<200)||(mode==='arena'&&wave===1&&waveTimer>0))){
+  if(state==='playing'&&mode==='levi'){
+    $.fillStyle='rgba(0,255,0,0.5)';$.font='13px monospace';$.textAlign='center';
+    let kl=keyName(leviKeys.left),kr=keyName(leviKeys.right),kt=keyName(leviKeys.thrust),ks=keyName(leviKeys.shoot);
+    let ctrl=LEVI_LEVELS[leviLevel].type==='word'?
+      kl+' '+kr+' Drehen | '+kt+' Schub | '+ks+' Schießen | H Wort hören':
+      kl+' '+kr+' Drehen | '+kt+' Schub | ESC Menü';
+    $.fillText(ctrl,W/2,H-20);
+    $.fillStyle='rgba(0,255,255,0.4)';$.font='11px monospace';
+    $.fillText(LEVI_LEVELS[leviLevel].desc,W/2,H-7);$.textAlign='left';
+  }
+  else if(state==='playing'&&((mode==='classic'&&!pod.attached&&ship.y<200)||(mode==='arena'&&wave===1&&waveTimer>0))){
     $.fillStyle='rgba(0,255,0,0.4)';$.font='11px monospace';$.textAlign='center';
     $.fillText('← → Drehen | ↑ Schub | SPACE Feuern | ESC Menü',W/2,H-20);
     $.fillStyle='rgba(0,255,255,0.4)';$.fillText('A/D Strafe | A/D + Drehung = Strafe-Boost!',W/2,H-7);$.textAlign='left';
@@ -2075,12 +2557,12 @@ function renderTitle(){
   $.font='bold 44px monospace';$.fillText('J - T H R U S T',W/2,100);$.shadowBlur=0;
   $.fillStyle='#0a0';$.font='13px monospace';$.fillText('by Jochen Hornung 2026',W/2,130);
 
-  const items=['KLASSIK','ARENA','EINSTELLUNGEN'];
-  const descs=['9 Original Thrust Levels','Überlebenskampf gegen Wellen','Schiffs-Physik anpassen'];
-  for(let i=0;i<3;i++){
+  const items=['KLASSIK','ARENA','LEVI','EINSTELLUNGEN'];
+  const descs=['9 Original Thrust Levels','Überlebenskampf gegen Wellen','6 Übungs-Level für Feinmotorik','Schiffs-Physik anpassen'];
+  for(let i=0;i<4;i++){
     $.fillStyle=i===menuSel?'#0f0':'#064';$.font=(i===menuSel?'bold ':'')+'18px monospace';
-    $.fillText((i===menuSel?'▸ ':'  ')+items[i],W/2,220+i*55);
-    if(i===menuSel){$.fillStyle='#0a0';$.font='11px monospace';$.fillText(descs[i],W/2,220+i*55+22);}
+    $.fillText((i===menuSel?'▸ ':'  ')+items[i],W/2,210+i*48);
+    if(i===menuSel){$.fillStyle='#0a0';$.font='11px monospace';$.fillText(descs[i],W/2,210+i*48+22);}
   }
 
   // Preview
@@ -2161,6 +2643,61 @@ function renderLevelSelect(){
     $.fillText((sel?'▸ ':'')+txt,W/2,y);
     if(sel){$.fillStyle='#0a0';$.font='10px monospace';
       $.fillText('Turrets: '+CL[i].turrets.length+' | Fuel Depots: '+CL[i].fuels.length,W/2,y+16);}
+  }
+  $.fillStyle='#0a0';$.font='10px monospace';
+  $.fillText('↑↓ Wählen | ENTER Starten | ESC Zurück',W/2,H-14);$.textAlign='left';
+}
+
+function renderLeviKeyConfig(){
+  $.textAlign='center';$.fillStyle='#0f0';$.shadowColor='#0f0';$.shadowBlur=8;
+  $.font='bold 22px monospace';$.fillText('LEVI — TASTEN EINSTELLEN',W/2,60);$.shadowBlur=0;
+  if(leviKeyCfgStep===-1){
+    $.fillStyle='#0a0';$.font='14px monospace';$.fillText('Aktuelle Belegung:',W/2,120);
+    for(let i=0;i<4;i++){
+      let y=170+i*40;
+      $.fillStyle='#0f0';$.font='15px monospace';
+      $.fillText(LEVI_KEY_LABELS[i]+':   '+keyName(leviKeys[LEVI_KEY_ACTIONS[i]]),W/2,y);
+    }
+    $.fillStyle='#0f0';$.font='13px monospace';
+    $.fillText('ENTER = So spielen',W/2,380);
+    $.fillText('LEERTASTE = Neu belegen',W/2,410);
+    $.fillStyle='#0a0';$.font='10px monospace';
+    $.fillText('ESC = Zurück zum Menü',W/2,H-14);
+  }else{
+    $.fillStyle='#0a0';$.font='14px monospace';
+    for(let i=0;i<4;i++){
+      let y=150+i*45;
+      if(i<leviKeyCfgStep){
+        $.fillStyle='#0f0';$.font='15px monospace';
+        $.fillText('✓ '+LEVI_KEY_LABELS[i]+':   '+keyName(leviKeys[LEVI_KEY_ACTIONS[i]]),W/2,y);
+      }else if(i===leviKeyCfgStep){
+        $.fillStyle='#ff0';$.font='bold 17px monospace';
+        $.fillText('▸ Drücke eine Taste für '+LEVI_KEY_LABELS[i]+'...',W/2,y);
+      }else{
+        $.fillStyle='#064';$.font='15px monospace';
+        $.fillText('  '+LEVI_KEY_LABELS[i]+':   ?',W/2,y);
+      }
+    }
+    $.fillStyle='#0a0';$.font='10px monospace';
+    $.fillText('ESC = Abbrechen',W/2,H-14);
+  }
+  $.textAlign='left';
+}
+
+function renderLeviLevelSelect(){
+  $.textAlign='center';$.fillStyle='#0f0';$.shadowColor='#0f0';$.shadowBlur=8;
+  $.font='bold 24px monospace';$.fillText('LEVI — LEVEL AUSWÄHLEN',W/2,60);$.shadowBlur=0;
+  for(let i=0;i<6;i++){
+    let sel=i===leviLevel,y=120+i*70;
+    $.fillStyle=sel?'#0f0':'#064';$.font=(sel?'bold ':'')+'16px monospace';
+    $.fillText((sel?'▸ ':'  ')+(i+1)+'. '+LEVI_LEVELS[i].n,W/2,y);
+    if(sel){
+      $.fillStyle='#0a0';$.font='11px monospace';
+      $.fillText(LEVI_LEVELS[i].desc,W/2,y+18);
+      let tagMap={fly:'Fliegen',pod:'Pod + Seil',rings:'Ringe',path:'Pfad',numbers:'Zahlen 1-9',word:'Wort hören + buchstabieren'};
+      let tag=tagMap[LEVI_LEVELS[i].type]||'';
+      if(tag)$.fillText('[ '+tag+' ]',W/2,y+34);
+    }
   }
   $.fillStyle='#0a0';$.font='10px monospace';
   $.fillText('↑↓ Wählen | ENTER Starten | ESC Zurück',W/2,H-14);$.textAlign='left';
