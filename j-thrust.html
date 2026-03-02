@@ -2565,10 +2565,6 @@ function renderTitle(){
     if(i===menuSel){$.fillStyle='#0a0';$.font='11px monospace';$.fillText(descs[i],W/2,210+i*48+22);}
   }
 
-  // Preview
-  $.fillStyle='#064';$.font='10px monospace';
-  if(menuSel===0)for(let i=0;i<CL.length;i++)$.fillText((i+1)+'. '+CL[i].n,W/2,420+i*16);
-
   $.fillStyle='#0f0';$.font='13px monospace';
   $.fillText('↑ ↓  Auswahl  |  ENTER / SPACE  Starten',W/2,H-30);
   $.fillStyle='#0ff';$.font='11px monospace';$.fillText('A/D + Drehung = Strafe-Boost!',W/2,H-12);$.textAlign='left';
