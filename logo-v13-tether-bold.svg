@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="stemGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#0FAAB6" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="podGrad" x1="0.5" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#DE9C36"/>
+    </linearGradient>
+    <radialGradient id="glow13" cx="0.4" cy="0.8" r="0.2">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Glow under pod -->
+  <ellipse cx="220" cy="410" rx="80" ry="45" fill="url(#glow13)"/>
+
+  <!-- === SHIP — bold, iconic === -->
+  <path d="M260 50 L238 100 L248 94 L248 115 L272 115 L272 94 L282 100 Z"
+        fill="#0FAAB6"/>
+  <!-- Cockpit highlight -->
+  <circle cx="260" cy="82" r="6" fill="#0A0A0F" opacity="0.4"/>
+  <circle cx="260" cy="81" r="3.5" fill="#0FAAB6" opacity="0.4"/>
+
+  <!-- Ship thrust -->
+  <path d="M252 115 L260 140 L268 115" fill="#DE9C36"/>
+  <path d="M255 115 L260 132 L265 115" fill="#FDBF55" opacity="0.6"/>
+
+  <!-- === TETHER — the J stem, solid connection === -->
+  <rect x="252" y="140" width="16" height="190" rx="3" fill="url(#stemGrad)"/>
+
+  <!-- === POD = J HOOK — the precious cargo === -->
+  <!-- Bold, confident hook -->
+  <path d="M252 330 L268 330 L268 365
+           Q268 400 248 418 Q228 432 205 425
+           Q182 418 175 395 Q170 372 180 352
+           L205 352 Q198 372 210 390
+           Q224 405 240 390 Q250 378 252 360 Z"
+        fill="url(#podGrad)"/>
+
+  <!-- Pod core — golden, the heart -->
+  <circle cx="218" cy="388" r="10" fill="#DE9C36" opacity="0.5"/>
+  <circle cx="218" cy="388" r="5" fill="#FDBF55" opacity="0.4"/>
+
+  <!-- === Subtle orbit arc === -->
+  <path d="M360 95 A180 180 0 1 0 300 438"
+        fill="none" stroke="#0FAAB6" stroke-width="1.5" stroke-linecap="round" opacity="0.15"/>
+</svg>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="512" viewBox="0 0 1000 512">
+  <defs>
+    <linearGradient id="tetherGrad14" x1="0.5" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0FAAB6" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="hookGrad14" x1="0.5" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#DE9C36"/>
+    </linearGradient>
+    <radialGradient id="glow14" cx="0.15" cy="0.78" r="0.12">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1000" height="512" fill="#0A0A0F"/>
+
+  <!-- Warm glow at pod -->
+  <ellipse cx="135" cy="400" rx="80" ry="50" fill="url(#glow14)"/>
+
+  <!-- === SHIP === -->
+  <path d="M185 55 L167 95 L175 90 L175 105 L195 105 L195 90 L203 95 Z"
+        fill="#0FAAB6"/>
+  <ellipse cx="185" cy="80" rx="5" ry="6" fill="#0D8A94"/>
+  <ellipse cx="185" cy="79" rx="3" ry="4" fill="#0FAAB6" opacity="0.5"/>
+  <!-- Ship thrust -->
+  <path d="M178 105 L185 125 L192 105" fill="#DE9C36" opacity="0.7"/>
+  <path d="M181 105 L185 118 L189 105" fill="#FDBF55" opacity="0.5"/>
+
+  <!-- === TETHER === -->
+  <path d="M185 125 Q187 180 183 230 Q181 280 185 320"
+        fill="none" stroke="url(#tetherGrad14)" stroke-width="3" stroke-linecap="round"
+        stroke-dasharray="6 4" opacity="0.7"/>
+
+  <!-- === POD / J HOOK === -->
+  <path d="M170 320 L200 320 L200 355
+           Q200 395 180 412 Q160 425 135 420
+           Q110 415 100 395 Q93 375 100 352
+           L125 352 Q120 372 133 388
+           Q147 402 165 385 Q173 374 173 355 L173 320 Z"
+        fill="url(#hookGrad14)"/>
+
+  <!-- Pod core -->
+  <circle cx="150" cy="385" r="8" fill="#DE9C36" opacity="0.6"/>
+  <circle cx="150" cy="385" r="4" fill="#FDBF55" opacity="0.4"/>
+
+  <!-- Top bar -->
+  <rect x="167" y="105" width="36" height="5" rx="2" fill="#0FAAB6" opacity="0.5"/>
+
+  <!-- === TEXT === -->
+  <!-- J-THRUST -->
+  <text x="280" y="255" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800"
+        font-size="88" letter-spacing="6" fill="#FAFAFA">J-THRUST</text>
+
+  <!-- Accent line -->
+  <rect x="282" y="272" width="480" height="2" fill="#DE9C36" opacity="0.4"/>
+
+  <!-- DIGITAL STUDIO -->
+  <text x="284" y="315" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="300"
+        font-size="34" letter-spacing="14" fill="#0FAAB6">DIGITAL STUDIO</text>
+</svg>

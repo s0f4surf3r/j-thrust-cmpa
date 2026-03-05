@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- The journey: from depth (teal) to warmth (gold) -->
+    <linearGradient id="jGrad" x1="0.5" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="70%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#DE9C36"/>
+    </linearGradient>
+    <!-- Warm glow where the hook finds its ground -->
+    <radialGradient id="glow" cx="0.35" cy="0.85" r="0.2">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Orbit gradient -->
+    <linearGradient id="orbitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#0FAAB6" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#DE9C36" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Warm glow at the base of the hook — where trust lives -->
+  <ellipse cx="195" cy="410" rx="80" ry="50" fill="url(#glow)"/>
+
+  <!-- The orbit — not closed, open, a journey -->
+  <path d="M380 120 A190 190 0 1 1 150 420"
+        fill="none" stroke="url(#orbitGrad)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- THE J — one continuous confident stroke -->
+  <!-- The stem descends with authority. The hook curves with grace. -->
+  <!-- Thick stem, beautiful serif at top, hook that sweeps left and subtly rises -->
+  <path d="M265 95 L265 90 L220 90 L220 95 L235 98
+           L235 330
+           Q235 375 225 395
+           Q212 418 190 418
+           Q168 418 158 400
+           Q150 385 155 365
+           L155 345 L172 345 L172 365
+           Q172 385 188 395
+           Q200 402 212 390
+           Q222 378 222 350
+           L222 98 L235 98
+           M265 95 L265 330
+           Q265 378 255 398
+           Q242 425 210 428
+           Q178 428 162 405
+           Q148 385 148 358
+           L148 335 L180 335 L180 360
+           Q180 392 200 405
+           Q218 414 232 398
+           Q242 380 242 345
+           L242 95 Z"
+        fill="url(#jGrad)"/>
+
+  <!-- Top bar — grounded, stable, the foundation you trust -->
+  <rect x="210" y="82" width="72" height="14" rx="2" fill="url(#jGrad)"/>
+
+  <!-- The dot — small, personal. This is Jochen. -->
+  <circle cx="248" cy="58" r="9" fill="#DE9C36"/>
+</svg>

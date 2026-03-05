@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="jFlow" x1="0.5" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="85%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#FDBF55"/>
+    </linearGradient>
+    <radialGradient id="warmth" cx="0.3" cy="0.82" r="0.25">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Warmth at the base -->
+  <ellipse cx="200" cy="400" rx="90" ry="55" fill="url(#warmth)"/>
+
+  <!-- J — single bold stroke, calligraphic weight -->
+  <!-- Wide at top (confidence), flowing into graceful hook (trust) -->
+  <path d="M230 105 L290 105 L290 112 L268 112
+           L268 340 Q268 380 252 400 Q236 418 212 418
+           Q186 418 172 398 Q162 382 165 355
+           L195 355 Q193 378 208 390 Q222 398 236 385
+           Q246 372 246 340 L246 112 L230 112 Z"
+        fill="url(#jFlow)"/>
+
+  <!-- Serif bar — wide, stable -->
+  <rect x="205" y="95" width="110" height="13" rx="2" fill="#0FAAB6"/>
+
+  <!-- The dot of J — golden, warm, personal = Jochen -->
+  <circle cx="260" cy="68" r="11" fill="#DE9C36"/>
+
+  <!-- Subtle energy line rising from the hook — the thrust -->
+  <!-- It doesn't scream, it flows -->
+  <path d="M170 388 Q155 420 160 445 Q165 460 175 458"
+        fill="none" stroke="#DE9C36" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M182 400 Q170 430 178 452"
+        fill="none" stroke="#FDBF55" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+</svg>

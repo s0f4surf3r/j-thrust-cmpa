@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="deep" x1="0.5" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="75%" stop-color="#0E8E98"/>
+      <stop offset="100%" stop-color="#DE9C36"/>
+    </linearGradient>
+    <radialGradient id="innerGlow" cx="0.35" cy="0.8" r="0.3">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6" stop-opacity="0.0"/>
+      <stop offset="40%" stop-color="#0FAAB6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#DE9C36" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- The glow of trust — warm, subtle, at the foundation -->
+  <ellipse cx="210" cy="405" rx="100" ry="60" fill="url(#innerGlow)"/>
+
+  <!-- Open arc — the orbit, the reach, incomplete = always growing -->
+  <path d="M365 105 A175 175 0 1 0 305 430"
+        fill="none" stroke="url(#arcGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- THE J — this is Jochen, this is the brand -->
+  <!-- Confident stem. The hook doesn't just curve — it EMBRACES. -->
+  <!-- Like a hand reaching down to lift someone up. -->
+  <path d="M248 108 C248 108 248 340 248 340
+           C248 382 238 405 218 415
+           C198 425 178 418 168 400
+           C158 382 160 358 160 348
+           L190 348
+           C190 358 188 380 202 392
+           C216 404 228 388 228 355
+           L228 108 Z"
+        fill="url(#deep)"/>
+
+  <!-- Second stroke — the thick side of J, gives it weight -->
+  <path d="M268 108 L268 335
+           C268 385 255 412 230 425
+           C205 438 175 432 158 412
+           C142 392 142 365 145 340
+           L160 348
+           C158 370 158 392 172 405
+           C186 418 205 418 222 405
+           C240 390 248 365 248 340
+           L248 108 Z"
+        fill="url(#deep)" opacity="0.85"/>
+
+  <!-- Top bar — the platform, the foundation -->
+  <rect x="222" y="96" width="72" height="14" rx="3" fill="#0FAAB6"/>
+
+  <!-- The golden dot — Jochen. Small but essential. The human at the center. -->
+  <circle cx="256" cy="68" r="10" fill="#DE9C36"/>
+  <!-- Inner light of the dot -->
+  <circle cx="254" cy="66" r="4" fill="#FDBF55" opacity="0.5"/>
+</svg>

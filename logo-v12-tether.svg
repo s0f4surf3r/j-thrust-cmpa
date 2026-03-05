@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="tetherGrad" x1="0.5" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0FAAB6" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="hookGrad" x1="0.5" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6"/>
+      <stop offset="100%" stop-color="#DE9C36"/>
+    </linearGradient>
+    <radialGradient id="glow12" cx="0.38" cy="0.78" r="0.25">
+      <stop offset="0%" stop-color="#FDBF55" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FDBF55" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arcG12" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0FAAB6" stop-opacity="0.0"/>
+      <stop offset="40%" stop-color="#0FAAB6" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#DE9C36" stop-opacity="0.12"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Warm glow at pod/hook -->
+  <ellipse cx="210" cy="400" rx="95" ry="60" fill="url(#glow12)"/>
+
+  <!-- Open arc -->
+  <path d="M370 90 A185 185 0 1 0 290 440"
+        fill="none" stroke="url(#arcG12)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- === THE SPACESHIP (top) === -->
+  <!-- Main hull -->
+  <path d="M260 55 L242 95 L250 90 L250 105 L270 105 L270 90 L278 95 Z"
+        fill="#0FAAB6"/>
+  <!-- Cockpit -->
+  <ellipse cx="260" cy="80" rx="5" ry="6" fill="#0D8A94"/>
+  <ellipse cx="260" cy="79" rx="3" ry="4" fill="#0FAAB6" opacity="0.5"/>
+  <!-- Thrust flame from ship -->
+  <path d="M253 105 L260 125 L267 105" fill="#DE9C36" opacity="0.7"/>
+  <path d="M256 105 L260 118 L264 105" fill="#FDBF55" opacity="0.5"/>
+
+  <!-- === THE TETHER (= stem of J) === -->
+  <!-- Slightly wavy line like a real tether under tension -->
+  <path d="M260 125 Q262 180 258 230 Q256 280 260 320"
+        fill="none" stroke="url(#tetherGrad)" stroke-width="3" stroke-linecap="round"
+        stroke-dasharray="6 4" opacity="0.7"/>
+
+  <!-- === THE POD/HOOK (= J hook = the payload, the trust) === -->
+  <!-- The J-hook IS the pod. Round, heavy, precious cargo. -->
+  <path d="M245 320 L275 320 L275 355
+           Q275 395 255 412 Q235 425 210 420
+           Q185 415 175 395 Q168 375 175 352
+           L200 352 Q195 372 208 388
+           Q222 402 240 385 Q248 374 248 355 L248 320 Z"
+        fill="url(#hookGrad)"/>
+
+  <!-- Pod detail — the "weight", the value being carried -->
+  <circle cx="225" cy="385" r="8" fill="#DE9C36" opacity="0.6"/>
+  <circle cx="225" cy="385" r="4" fill="#FDBF55" opacity="0.4"/>
+
+  <!-- Top bar of J — integrated with ship, like landing struts -->
+  <rect x="242" y="105" width="36" height="5" rx="2" fill="#0FAAB6" opacity="0.5"/>
+</svg>
