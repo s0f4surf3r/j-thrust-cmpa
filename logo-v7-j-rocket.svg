@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="#0FAAB6" stroke-width="2.5" opacity="0.25"/>
+
+  <!-- J as a bold simple shape -->
+  <path d="M250 80 L310 80 L310 85 L285 85 L285 330
+           Q285 370 260 388 Q235 400 210 388 Q185 370 185 340 L185 300 L215 300 L215 335
+           Q215 358 235 368 Q255 372 265 355 Q270 345 270 330 L270 85 L250 85 Z"
+        fill="#0FAAB6"/>
+
+  <!-- Dot of the J -->
+  <circle cx="278" cy="55" r="12" fill="#0FAAB6"/>
+
+  <!-- Thrust flame from hook bottom -->
+  <path d="M205 392 L185 435 L208 418 L225 445 Z" fill="#DE9C36"/>
+  <path d="M203 405 L188 448 L210 432 L222 455 Z" fill="#FDBF55" opacity="0.65"/>
+
+  <!-- Small sparks -->
+  <circle cx="200" cy="460" r="2.5" fill="#DE9C36" opacity="0.4"/>
+  <circle cx="218" cy="466" r="2" fill="#DE9C36" opacity="0.3"/>
+</svg>

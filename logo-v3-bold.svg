@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#0A0A0F"/>
+
+  <!-- Big J as hero element -->
+  <g transform="translate(60, 50)">
+    <!-- Flame -->
+    <path d="M55 250 L38 295 L55 280 L72 295 Z" fill="#DE9C36"/>
+    <path d="M55 265 L44 305 L55 293 L66 305 Z" fill="#FDBF55" opacity="0.8"/>
+    <!-- J shape -->
+    <path d="M28 0 L82 0 L82 190 Q82 240 55 258 Q28 240 28 200 Z" fill="#0FAAB6"/>
+    <rect x="14" y="-8" width="82" height="10" rx="5" fill="#0FAAB6"/>
+    <!-- Inner shadow -->
+    <path d="M42 12 L72 12 L72 180 Q72 225 55 243 Q40 228 40 195 Z" fill="#0D8A94" opacity="0.5"/>
+  </g>
+
+  <!-- Dash -->
+  <rect x="158" y="150" width="30" height="8" rx="4" fill="#DE9C36"/>
+
+  <!-- THRUST -->
+  <text x="200" y="185" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900"
+        font-size="110" letter-spacing="6" fill="#FAFAFA">THRUST</text>
+
+  <!-- DIGITAL STUDIO -->
+  <text x="200" y="240" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="300"
+        font-size="32" letter-spacing="18" fill="#0FAAB6">DIGITAL STUDIO</text>
+
+  <!-- Bottom accent -->
+  <rect x="200" y="198" width="480" height="2" fill="#DE9C36" opacity="0.5"/>
+</svg>

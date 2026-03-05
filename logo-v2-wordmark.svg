@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#0A0A0F"/>
+
+  <!-- J icon small (left side) -->
+  <g transform="translate(80, 100)">
+    <!-- Flame -->
+    <path d="M30 160 L22 185 L30 178 L38 185 Z" fill="#DE9C36" opacity="0.9"/>
+    <path d="M30 170 L25 192 L30 186 L35 192 Z" fill="#FDBF55" opacity="0.7"/>
+    <!-- J shape -->
+    <path d="M16 10 L44 10 L44 120 Q44 150 30 162 Q16 150 16 130 Z" fill="#0FAAB6"/>
+    <rect x="8" y="5" width="44" height="6" rx="3" fill="#0FAAB6"/>
+  </g>
+
+  <!-- J-THRUST text -->
+  <text x="160" y="205" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800"
+        font-size="96" letter-spacing="8" fill="#FAFAFA">J-THRUST</text>
+
+  <!-- DIGITAL STUDIO subtitle -->
+  <text x="164" y="260" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="300"
+        font-size="36" letter-spacing="16" fill="#0FAAB6">DIGITAL STUDIO</text>
+
+  <!-- Accent line -->
+  <rect x="160" y="220" width="520" height="2" fill="#DE9C36" opacity="0.6"/>
+</svg>

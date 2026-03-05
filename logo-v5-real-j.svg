@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#0FAAB6" stroke-width="3" opacity="0.3"/>
+
+  <!-- J shape - proper J with left hook -->
+  <path d="M240 90 L300 90 L300 320 Q300 390 250 400 Q200 400 185 360 Q175 335 185 310 L240 310 L240 340 Q240 360 255 365 Q270 365 270 340 L270 90"
+        fill="#0FAAB6"/>
+
+  <!-- J top bar -->
+  <rect x="210" y="80" width="120" height="14" rx="7" fill="#0FAAB6"/>
+
+  <!-- Thrust flame from the J hook (going down-left) -->
+  <path d="M210 385 L185 430 L210 415 L230 440 Z" fill="#DE9C36"/>
+  <path d="M208 400 L190 445 L212 428 L225 452 Z" fill="#FDBF55" opacity="0.7"/>
+
+  <!-- Thrust particles -->
+  <circle cx="205" cy="458" r="3" fill="#DE9C36" opacity="0.5"/>
+  <circle cx="190" cy="462" r="2" fill="#DE9C36" opacity="0.3"/>
+  <circle cx="220" cy="465" r="2" fill="#DE9C36" opacity="0.3"/>
+</svg>

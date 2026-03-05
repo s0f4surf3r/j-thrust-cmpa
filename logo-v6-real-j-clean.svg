@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="256" r="195" fill="none" stroke="#0FAAB6" stroke-width="2.5" opacity="0.25"/>
+
+  <!-- J shape - clean proper J -->
+  <path d="M255 95 L305 95 L305 330 Q305 385 265 405 Q225 415 195 390 Q170 365 185 330 L215 330 Q210 355 230 370 Q250 380 268 365 Q275 355 275 330 L275 95"
+        fill="#0FAAB6"/>
+
+  <!-- J top serif/bar -->
+  <rect x="225" y="85" width="110" height="12" rx="6" fill="#0FAAB6"/>
+
+  <!-- Thrust flame - exits from J hook curve -->
+  <path d="M200 395 L178 440 L203 420 L218 448 Z" fill="#DE9C36"/>
+  <path d="M198 408 L182 452 L205 434 L215 458 Z" fill="#FDBF55" opacity="0.6"/>
+</svg>

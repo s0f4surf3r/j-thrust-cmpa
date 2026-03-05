@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="240" r="180" fill="none" stroke="#0FAAB6" stroke-width="3" opacity="0.3"/>
+
+  <!-- J shape centered -->
+  <path d="M222 110 L290 110 L290 300 Q290 355 256 380 Q222 355 222 315 Z" fill="#0FAAB6"/>
+  <rect x="200" y="100" width="112" height="12" rx="6" fill="#0FAAB6"/>
+
+  <!-- Thrust flame -->
+  <path d="M256 385 L235 435 L256 418 L277 435 Z" fill="#DE9C36"/>
+  <path d="M256 400 L243 445 L256 432 L269 445 Z" fill="#FDBF55" opacity="0.7"/>
+
+  <!-- Three thrust particles -->
+  <circle cx="256" cy="455" r="3" fill="#DE9C36" opacity="0.5"/>
+  <circle cx="242" cy="462" r="2" fill="#DE9C36" opacity="0.3"/>
+  <circle cx="270" cy="460" r="2" fill="#DE9C36" opacity="0.3"/>
+</svg>

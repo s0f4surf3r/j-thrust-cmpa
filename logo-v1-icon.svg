@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+
+  <!-- Thrust flame (gold) -->
+  <path d="M256 420 L230 480 L256 460 L282 480 Z" fill="#DE9C36" opacity="0.9"/>
+  <path d="M256 440 L242 500 L256 485 L270 500 Z" fill="#FDBF55" opacity="0.7"/>
+
+  <!-- J body (teal) -->
+  <path d="M220 100 L292 100 L292 320 Q292 380 256 410 Q220 380 220 340 Z"
+        fill="#0FAAB6"/>
+
+  <!-- J top bar highlight -->
+  <rect x="190" y="90" width="132" height="12" rx="6" fill="#0FAAB6"/>
+
+  <!-- Inner cut / depth -->
+  <path d="M244 112 L280 112 L280 310 Q280 360 256 385 Q238 365 238 330 Z"
+        fill="#0D8A94" opacity="0.6"/>
+
+  <!-- Thrust lines (gold accents) -->
+  <line x1="256" y1="415" x2="256" y2="445" stroke="#DE9C36" stroke-width="2" opacity="0.5"/>
+  <line x1="244" y1="410" x2="238" y2="450" stroke="#DE9C36" stroke-width="1.5" opacity="0.4"/>
+  <line x1="268" y1="410" x2="274" y2="450" stroke="#DE9C36" stroke-width="1.5" opacity="0.4"/>
+</svg>
