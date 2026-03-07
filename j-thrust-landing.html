@@ -127,7 +127,7 @@ function draw(){
 
   // === Lockup — ein Gap G regiert alle Abstände ===
   let fontSize=Math.max(32,Math.min(80,W*0.08));
-  let subSize=Math.round(fontSize*0.22);
+  let subSize=Math.round(fontSize*0.28);
   let tagSize=Math.round(fontSize*0.11);
   let G=Math.round(fontSize*0.12);               // einheitlicher optischer Abstand
   let titleY=cy+sc*135;
@@ -158,7 +158,7 @@ function draw(){
 
   // Subtitle
   $.fillStyle='rgba(138,160,32,0.5)';$.font=`300 ${subSize}px Montserrat,sans-serif`;
-  $.letterSpacing=Math.round(subSize*0.28)+'px';
+  $.letterSpacing=Math.round(subSize*0.35)+'px';
   $.fillText('DIGITAL STUDIO',cx,subY);
   $.letterSpacing='0px';
 
