@@ -125,17 +125,21 @@ function draw(){
 
   $.restore(); // end main scale
 
-  // === Title + Lockup (Montserrat, 3:1 ratio) ===
+  // === Lockup — ein Gap G regiert alle Abstände ===
   let fontSize=Math.max(32,Math.min(80,W*0.08));
-  let subSize=Math.round(fontSize*0.25);
-  let gapA=Math.round(fontSize*0.15);
-  let gapB=Math.round(gapA+subSize*0.72);
+  let subSize=Math.round(fontSize*0.22);
+  let tagSize=Math.round(fontSize*0.11);
+  let G=Math.round(fontSize*0.12);               // einheitlicher optischer Abstand
   let titleY=cy+sc*135;
-  let lineY=titleY+gapA;
-  let subY=titleY+gapA+gapB;
+
+  // Positionen: G zwischen Baseline/Capline jedes Elements
+  let lineY=titleY+G;                             // Title baseline + G → Linie
+  let subY=lineY+G+Math.round(subSize*0.72);      // Linie + G + Cap-Height → Sub baseline
+  let tagY=subY+G+Math.round(tagSize*0.72);       // Sub baseline + G + Cap-Height → Tag baseline
 
   // Title
   $.font=`700 ${fontSize}px Montserrat,sans-serif`;
+  let titleW=$.measureText('J-THRUST').width;
   $.shadowColor='#c8e030';$.shadowBlur=30*sc;
   $.fillStyle='rgba(200,224,48,0.12)';
   $.fillText('J-THRUST',cx,titleY);
@@ -144,27 +148,24 @@ function draw(){
   $.fillText('J-THRUST',cx,titleY);
   $.shadowBlur=0;
 
-  // Accent line — breite des Titeltexts
-  let titleW=$.measureText('J-THRUST').width;
-  let lineW=titleW*1.1;
+  // Accent line — 80% Titelbreite, 2px
+  let lineW=titleW*0.8;
   let lg=$.createLinearGradient(cx-lineW/2,0,cx+lineW/2,0);
-  lg.addColorStop(0,'rgba(15,170,182,0)');lg.addColorStop(0.25,'rgba(15,170,182,0.45)');
-  lg.addColorStop(0.75,'rgba(222,156,54,0.45)');lg.addColorStop(1,'rgba(222,156,54,0)');
-  $.strokeStyle=lg;$.lineWidth=2.5;
+  lg.addColorStop(0,'rgba(15,170,182,0.05)');lg.addColorStop(0.3,'rgba(15,170,182,0.5)');
+  lg.addColorStop(0.7,'rgba(222,156,54,0.5)');lg.addColorStop(1,'rgba(222,156,54,0.05)');
+  $.strokeStyle=lg;$.lineWidth=2;
   $.beginPath();$.moveTo(cx-lineW/2,lineY);$.lineTo(cx+lineW/2,lineY);$.stroke();
 
   // Subtitle
   $.fillStyle='rgba(138,160,32,0.5)';$.font=`300 ${subSize}px Montserrat,sans-serif`;
-  $.letterSpacing=Math.round(subSize*0.3)+'px';
+  $.letterSpacing=Math.round(subSize*0.28)+'px';
   $.fillText('DIGITAL STUDIO',cx,subY);
   $.letterSpacing='0px';
 
-  // Three-word tagline
-  let tagSize=Math.round(subSize*0.52);
-  let tagY=subY+subSize*0.42;
+  // Tagline
   $.font=`300 ${tagSize}px Montserrat,sans-serif`;
-  $.letterSpacing=Math.round(tagSize*0.22)+'px';
-  $.fillStyle='rgba(15,170,182,0.45)';
+  $.letterSpacing=Math.round(tagSize*0.2)+'px';
+  $.fillStyle='rgba(15,170,182,0.4)';
   $.fillText('GRAVITY  ·  REACH  ·  STRUCTURE',cx,tagY);
   $.letterSpacing='0px';
 
