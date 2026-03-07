@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J-THRUST — Digital Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0A0A0F;cursor:default}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const C=document.getElementById('c'),$=C.getContext('2d');
+let W,H,stars=[];
+
+function resize(){
+  W=C.width=window.innerWidth*devicePixelRatio;
+  H=C.height=window.innerHeight*devicePixelRatio;
+  $.scale(devicePixelRatio,devicePixelRatio);
+  W=window.innerWidth;H=window.innerHeight;
+  C.style.width=W+'px';C.style.height=H+'px';
+  stars=[];
+  for(let i=0;i<200;i++){
+    stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()<0.85?1:1.5,b:0.15+Math.random()*0.5});
+  }
+}
+window.addEventListener('resize',resize);
+resize();
+
+function draw(){
+  requestAnimationFrame(draw);
+  $.clearRect(0,0,W,H);
+  $.fillStyle='#0A0A0F';$.fillRect(0,0,W,H);
+
+  // Stars
+  for(let s of stars){
+    $.fillStyle=`rgba(180,180,220,${s.b*(0.7+0.3*Math.sin(Date.now()*0.001+s.x))})`;
+    $.fillRect(s.x,(s.y+Date.now()*0.005*s.b)%H,s.s,s.s);
+  }
+
+  $.textAlign='center';
+  let cx=W/2,cy=H*0.38;
+  let t=Date.now()*0.001;
+
+  // Scale everything relative to viewport
+  let sc=Math.min(W/800,H/600)*0.85;
+
+  $.save();$.translate(cx,cy);$.scale(sc,sc);
+
+  // === Arc — wraps logo + title + subtitle ===
+  $.strokeStyle='rgba(15,170,182,0.04)';$.lineWidth=14;
+  $.beginPath();$.arc(0,0,220,Math.PI*0.6,Math.PI*0.4);$.stroke();
+  let arcG=$.createLinearGradient(-220,-130,180,230);
+  arcG.addColorStop(0,'rgba(15,170,182,0.02)');arcG.addColorStop(0.35,'rgba(15,170,182,0.18)');
+  arcG.addColorStop(0.7,'rgba(222,156,54,0.12)');arcG.addColorStop(1,'rgba(222,156,54,0.03)');
+  $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
+  $.beginPath();$.arc(0,0,220,Math.PI*0.6,Math.PI*0.4);$.stroke();
+
+  // Warm glow bridge between hook and title
+  let glowG=$.createRadialGradient(0,80,10,0,80,100);
+  glowG.addColorStop(0,'rgba(222,156,54,0.06)');glowG.addColorStop(1,'rgba(222,156,54,0)');
+  $.fillStyle=glowG;$.fillRect(-120,-20,240,200);
+
+  // === Ship ===
+  let shipBob=Math.sin(t*2)*3;
+  let swing=Math.sin(t*1.2)*0.18;
+
+  $.save();$.translate(0,shipBob);
+  // Hull
+  $.fillStyle='#0FAAB6';$.beginPath();
+  $.moveTo(0,-160);$.lineTo(-22,-100);$.lineTo(-12,-108);$.lineTo(-12,-88);
+  $.lineTo(12,-88);$.lineTo(12,-108);$.lineTo(22,-100);$.closePath();$.fill();
+  // Cockpit
+  $.fillStyle='#0D8A94';$.beginPath();$.ellipse(0,-130,7,9,0,0,Math.PI*2);$.fill();
+  $.fillStyle='rgba(15,170,182,0.5)';$.beginPath();$.ellipse(0,-132,5,6,0,0,Math.PI*2);$.fill();
+  // Struts
+  $.fillStyle='rgba(15,170,182,0.5)';$.fillRect(-20,-88,40,5);
+  // Flame
+  let flicker=0.6+0.4*Math.sin(t*12);
+  $.fillStyle=`rgba(222,156,54,${flicker*0.8})`;
+  $.beginPath();$.moveTo(-8,-83);$.lineTo(0,-55-Math.sin(t*8)*5);$.lineTo(8,-83);$.closePath();$.fill();
+  $.fillStyle=`rgba(253,191,85,${flicker*0.6})`;
+  $.beginPath();$.moveTo(-5,-83);$.lineTo(0,-65-Math.sin(t*10)*4);$.lineTo(5,-83);$.closePath();$.fill();
+  $.restore();
+
+  // === Tether + swinging J-Hook ===
+  $.save();$.translate(0,shipBob);
+  let tetherLen=80;
+  let ax=0,ay=-83+5;
+  let jx=Math.sin(swing)*tetherLen;
+  let jy=ay+Math.cos(swing)*tetherLen;
+
+  // Tether line
+  $.strokeStyle='rgba(15,170,182,0.4)';$.lineWidth=2;$.setLineDash([6,4]);
+  $.beginPath();$.moveTo(ax,ay);$.quadraticCurveTo(ax+jx*0.3,ay+(jy-ay)*0.5,jx,jy);$.stroke();
+  $.setLineDash([]);
+
+  // J-Hook at end
+  $.save();$.translate(jx,jy);$.rotate(swing*0.5);
+  let jhg=$.createLinearGradient(0,-16,-14,55);jhg.addColorStop(0,'#0FAAB6');jhg.addColorStop(1,'#DE9C36');
+  $.fillStyle=jhg;
+  $.beginPath();
+  $.moveTo(-6,-16);$.lineTo(6,-16);
+  $.lineTo(6,18);$.quadraticCurveTo(6,42,-8,52);
+  $.quadraticCurveTo(-20,58,-30,54);$.quadraticCurveTo(-38,48,-38,38);
+  $.lineTo(-26,38);$.quadraticCurveTo(-26,46,-18,50);
+  $.quadraticCurveTo(-8,52,-4,42);$.quadraticCurveTo(0,36,0,28);
+  $.lineTo(-6,28);$.lineTo(-6,-16);$.closePath();$.fill();
+
+  // Ball with inertia
+  let ballT=-swing*3.5;
+  let bx=-16+ballT*10;
+  let by=44-Math.abs(ballT)*5;
+  bx=Math.max(-28,Math.min(-6,bx));
+  $.fillStyle='rgba(222,156,54,0.7)';$.beginPath();$.arc(bx,by,6,0,Math.PI*2);$.fill();
+  $.fillStyle='rgba(253,191,85,0.5)';$.beginPath();$.arc(bx,by,3,0,Math.PI*2);$.fill();
+  $.restore();
+  $.restore();
+
+  $.restore(); // end main scale
+
+  // === Title + Lockup (Montserrat, 3:1 ratio) ===
+  let fontSize=Math.max(32,Math.min(80,W*0.08));
+  let subSize=Math.round(fontSize*0.25);
+  let gapA=Math.round(fontSize*0.15);
+  let gapB=Math.round(gapA+subSize*0.72);
+  let titleY=cy+sc*135;
+  let lineY=titleY+gapA;
+  let subY=titleY+gapA+gapB;
+
+  // Title
+  $.font=`700 ${fontSize}px Montserrat,sans-serif`;
+  $.shadowColor='#c8e030';$.shadowBlur=30*sc;
+  $.fillStyle='rgba(200,224,48,0.12)';
+  $.fillText('J-THRUST',cx,titleY);
+  $.shadowBlur=12*sc;
+  $.fillStyle='#c8e030';
+  $.fillText('J-THRUST',cx,titleY);
+  $.shadowBlur=0;
+
+  // Accent line — breite des Titeltexts
+  let titleW=$.measureText('J-THRUST').width;
+  let lineW=titleW*1.1;
+  let lg=$.createLinearGradient(cx-lineW/2,0,cx+lineW/2,0);
+  lg.addColorStop(0,'rgba(15,170,182,0)');lg.addColorStop(0.25,'rgba(15,170,182,0.45)');
+  lg.addColorStop(0.75,'rgba(222,156,54,0.45)');lg.addColorStop(1,'rgba(222,156,54,0)');
+  $.strokeStyle=lg;$.lineWidth=2.5;
+  $.beginPath();$.moveTo(cx-lineW/2,lineY);$.lineTo(cx+lineW/2,lineY);$.stroke();
+
+  // Subtitle
+  $.fillStyle='rgba(138,160,32,0.5)';$.font=`300 ${subSize}px Montserrat,sans-serif`;
+  $.letterSpacing=Math.round(subSize*0.3)+'px';
+  $.fillText('DIGITAL STUDIO',cx,subY);
+  $.letterSpacing='0px';
+
+  // Three-word tagline
+  let tagSize=Math.round(subSize*0.52);
+  let tagY=subY+subSize*1.05;
+  $.font=`300 ${tagSize}px Montserrat,sans-serif`;
+  $.letterSpacing=Math.round(tagSize*0.22)+'px';
+  $.fillStyle='rgba(15,170,182,0.45)';
+  $.fillText('GRAVITY  ·  REACH  ·  STRUCTURE',cx,tagY);
+  $.letterSpacing='0px';
+
+  $.textAlign='left';
+}
+
+draw();
+</script>
+</body>
+</html>

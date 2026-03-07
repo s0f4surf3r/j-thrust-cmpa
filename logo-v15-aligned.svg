@@ -54,8 +54,8 @@
   <text x="260" y="255" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800"
         font-size="88" textLength="560" lengthAdjust="spacingAndGlyphs" fill="#FAFAFA">J-THRUST</text>
 
-  <!-- Accent line — gleiche Breite wie Text -->
-  <rect x="260" y="272" width="560" height="2" fill="#DE9C36" opacity="0.4"/>
+  <!-- Accent line — breiter, dicker, mittig im Gap -->
+  <rect x="260" y="278" width="560" height="4" rx="2" fill="#DE9C36" opacity="0.6"/>
 
   <!-- DIGITAL STUDIO — exakt gleiche Breite wie J-THRUST -->
   <text x="260" y="315" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="300"
