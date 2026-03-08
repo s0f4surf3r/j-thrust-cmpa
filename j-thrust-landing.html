@@ -6,7 +6,7 @@
 <title>J-THRUST — Digital Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&family=Raleway:wght@300;700&family=Poppins:wght@300;700&family=Inter:wght@300;700&family=Outfit:wght@300;700&family=Space+Grotesk:wght@300;700&family=Sora:wght@300;700&family=DM+Sans:wght@300;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#0A0A0F;cursor:default}
@@ -19,6 +19,9 @@ canvas{display:block;width:100%;height:100%}
 #ctrl input[type=range]{width:130px;accent-color:#0FAAB6}
 #ctrl .val{color:#c8e030;min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 #ctrl .hint{color:rgba(15,170,182,0.4);font-size:10px;text-align:center;margin-top:8px}
+#ctrl select{background:#151520;color:#c8e030;border:1px solid rgba(15,170,182,0.3);
+  border-radius:4px;padding:2px 4px;font-size:11px;width:130px}
+#ctrl .sep{border:none;border-top:1px solid rgba(15,170,182,0.15);margin:8px 0}
 </style>
 </head>
 <body>
@@ -30,6 +33,11 @@ canvas{display:block;width:100%;height:100%}
   <label>Gap <input type="range" id="rGap" min="0.04" max="0.25" step="0.005" value="0.12"><span class="val" id="vGap"></span></label>
   <label>Line W <input type="range" id="rLine" min="0.3" max="1.2" step="0.05" value="0.8"><span class="val" id="vLine"></span></label>
   <label>Arc R <input type="range" id="rArc" min="150" max="300" step="5" value="220"><span class="val" id="vArc"></span></label>
+  <hr class="sep">
+  <label>Title Font <select id="fTitle"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <label>Sub Font <select id="fSub"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <label>Tag Font <select id="fTag"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <hr class="sep">
   <label>Ball Size <input type="range" id="rBall" min="3" max="14" step="0.5" value="7"><span class="val" id="vBall"></span></label>
   <label>Glow <input type="range" id="rGlow" min="5" max="60" step="1" value="35"><span class="val" id="vGlow"></span></label>
   <label>Shine <input type="range" id="rShine" min="0.2" max="1.0" step="0.05" value="0.9"><span class="val" id="vShine"></span></label>
@@ -58,6 +66,7 @@ function draw(){
   // Slider values (read once per frame)
   let _t=+rTitle.value, _s=+rSub.value, _g=+rTag.value, _G=+rGap.value, _l=+rLine.value, _a=+rArc.value;
   let _b=+rBall.value, _gw=+rGlow.value, _sh=+rShine.value;
+  let _fT=fTitle.value+',sans-serif', _fS=fSub.value+',sans-serif', _fG=fTag.value+',sans-serif';
   vTitle.textContent=_t;vSub.textContent=_s;vTag.textContent=_g;vGap.textContent=_G;vLine.textContent=_l;vArc.textContent=_a;
   vBall.textContent=_b;vGlow.textContent=_gw;vShine.textContent=_sh;
   $.clearRect(0,0,W,H);
@@ -171,7 +180,7 @@ function draw(){
   let tagY=subY+G+Math.round(tagSize*0.72);       // Sub baseline + G + Cap-Height → Tag baseline
 
   // Title
-  $.font=`700 ${fontSize}px Montserrat,sans-serif`;
+  $.font=`700 ${fontSize}px ${_fT}`;
   let titleW=$.measureText('J-THRUST').width;
   $.shadowColor='#c8e030';$.shadowBlur=30*sc;
   $.fillStyle='rgba(200,224,48,0.12)';
@@ -190,13 +199,13 @@ function draw(){
   $.beginPath();$.moveTo(cx-lineW/2,lineY);$.lineTo(cx+lineW/2,lineY);$.stroke();
 
   // Subtitle
-  $.fillStyle='rgba(138,160,32,0.5)';$.font=`300 ${subSize}px Montserrat,sans-serif`;
+  $.fillStyle='rgba(138,160,32,0.5)';$.font=`300 ${subSize}px ${_fS}`;
   $.letterSpacing=Math.round(subSize*0.35)+'px';
   $.fillText('DIGITAL STUDIO',cx,subY);
   $.letterSpacing='0px';
 
   // Tagline
-  $.font=`300 ${tagSize}px Montserrat,sans-serif`;
+  $.font=`300 ${tagSize}px ${_fG}`;
   $.letterSpacing=Math.round(tagSize*0.2)+'px';
   $.fillStyle='rgba(15,210,225,0.75)';
   $.fillText('GRAVITY  ·  REACH  ·  STRUCTURE',cx,tagY);
