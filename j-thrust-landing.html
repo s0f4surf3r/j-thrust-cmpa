@@ -152,16 +152,17 @@ function draw(){
   let bx=-16+ballT*10;
   let by=44-Math.abs(ballT)*5;
   bx=Math.max(-28,Math.min(-6,bx));
-  // Deep glow
-  $.shadowColor='#FDBF55';$.shadowBlur=_gw;
-  $.fillStyle=`rgba(222,156,54,${0.15*_sh})`;$.beginPath();$.arc(bx,by,_b*2.3,0,Math.PI*2);$.fill();
+  // Deep glow (shadowBlur durch Scale kompensieren)
+  $.shadowColor=`rgba(253,191,85,${_sh})`;$.shadowBlur=_gw/sc;
+  $.fillStyle=`rgba(222,156,54,${0.2*_sh})`;$.beginPath();$.arc(bx,by,_b*2.5,0,Math.PI*2);$.fill();
   // Mid glow
-  $.fillStyle=`rgba(222,156,54,${0.3*_sh})`;$.beginPath();$.arc(bx,by,_b*1.6,0,Math.PI*2);$.fill();
+  $.shadowBlur=_gw*0.5/sc;
+  $.fillStyle=`rgba(253,191,85,${0.35*_sh})`;$.beginPath();$.arc(bx,by,_b*1.6,0,Math.PI*2);$.fill();
   $.shadowBlur=0;
   // Ball
   $.fillStyle=`rgba(222,156,54,${_sh})`;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
   // Hot core
-  $.fillStyle=`rgba(253,220,120,${_sh*0.85})`;$.beginPath();$.arc(bx,by,_b*0.5,0,Math.PI*2);$.fill();
+  $.fillStyle=`rgba(253,220,120,${Math.min(1,_sh*1.1)})`;$.beginPath();$.arc(bx,by,_b*0.45,0,Math.PI*2);$.fill();
   $.restore();
   $.restore();
 
