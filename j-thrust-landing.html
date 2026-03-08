@@ -225,34 +225,37 @@ function draw(){
 
   // === Atem-Nebel (Cyan #25a2a2) — vor dem Ball ===
   if(breathOn){
-    let nebelBase=breathR+2;
-    let nebelExpand=(0.35+breathMod*0.65)*breathR*0.4;
-    for(let layer=0;layer<3;layer++){
-      let off=layer*breathR*0.06;
-      let innerR=nebelBase+off;
-      let outerR=nebelBase+nebelExpand+off*0.5;
-      let na=(0.12+breathMod*0.1)*(1-layer*0.3);
-      let ng=$.createRadialGradient(bx,by,innerR,bx,by,outerR);
-      ng.addColorStop(0,`rgba(37,162,162,${na})`);
-      ng.addColorStop(0.4,`rgba(37,162,162,${na*0.5})`);
-      ng.addColorStop(1,'rgba(37,162,162,0)');
-      $.fillStyle=ng;
-      $.beginPath();$.arc(bx,by,outerR,0,Math.PI*2);$.fill();
-    }
+    let nebelOuter=breathR*(2.5+breathMod*2);
+    let ng=$.createRadialGradient(bx,by,breathR*0.3,bx,by,nebelOuter);
+    let na=0.4+breathMod*0.4;
+    ng.addColorStop(0,`rgba(37,162,162,${na})`);
+    ng.addColorStop(0.3,`rgba(37,162,162,${na*0.5})`);
+    ng.addColorStop(0.6,`rgba(37,162,162,${na*0.15})`);
+    ng.addColorStop(1,'rgba(37,162,162,0)');
+    $.fillStyle=ng;
+    $.beginPath();$.arc(bx,by,nebelOuter,0,Math.PI*2);$.fill();
+    // Zweiter Ring, versetzt
+    let ng2=$.createRadialGradient(bx,by,breathR,bx,by,nebelOuter*0.7);
+    ng2.addColorStop(0,`rgba(60,200,200,${na*0.3})`);
+    ng2.addColorStop(1,'rgba(60,200,200,0)');
+    $.fillStyle=ng2;
+    $.beginPath();$.arc(bx,by,nebelOuter*0.7,0,Math.PI*2);$.fill();
   }
 
-  // === Glow: gestaffelte Kreise ===
-  for(let i=5;i>=1;i--){
-    let r=breathR+(_gw*0.8)*(i/5);
-    let a=_sh*0.12*(1-i/6);
-    $.fillStyle=`rgba(253,210,80,${a})`;
-    $.beginPath();$.arc(bx,by,r,0,Math.PI*2);$.fill();
-  }
+  // === Glow: radial gradient (eine einzige Fläche, viel sichtbarer) ===
+  let glowOuter=breathR+_gw*0.6;
+  let gg=$.createRadialGradient(bx,by,breathR*0.5,bx,by,glowOuter);
+  gg.addColorStop(0,`rgba(253,210,80,${_sh*0.5})`);
+  gg.addColorStop(0.4,`rgba(253,190,60,${_sh*0.3})`);
+  gg.addColorStop(0.7,`rgba(253,170,40,${_sh*0.12})`);
+  gg.addColorStop(1,'rgba(253,170,40,0)');
+  $.fillStyle=gg;
+  $.beginPath();$.arc(bx,by,glowOuter,0,Math.PI*2);$.fill();
 
   // === Rim ring ===
-  $.strokeStyle=`rgba(253,220,120,${_sh*0.7})`;
-  $.lineWidth=0.5+_sh*0.8;
-  $.beginPath();$.arc(bx,by,breathR+1,0,Math.PI*2);$.stroke();
+  $.strokeStyle=`rgba(253,230,140,${_sh})`;
+  $.lineWidth=1+_sh*1.5;
+  $.beginPath();$.arc(bx,by,breathR+2,0,Math.PI*2);$.stroke();
 
   // === Ball body ===
   let ballG=$.createRadialGradient(bx-breathR*0.3,by-breathR*0.3,breathR*0.1,bx,by,breathR);
