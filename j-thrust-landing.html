@@ -41,11 +41,57 @@ canvas{display:block;width:100%;height:100%}
   <label>Ball Size <input type="range" id="rBall" min="3" max="14" step="0.5" value="7"><span class="val" id="vBall"></span></label>
   <label>Glow <input type="range" id="rGlow" min="5" max="60" step="1" value="35"><span class="val" id="vGlow"></span></label>
   <label>Shine <input type="range" id="rShine" min="0.2" max="1.0" step="0.05" value="0.9"><span class="val" id="vShine"></span></label>
+  <label>Partikel <input type="range" id="rParts" min="0" max="50" step="1" value="25"><span class="val" id="vParts"></span></label>
+  <hr class="sep">
+  <label>Atmen <input type="range" id="rBreath" min="0" max="1" step="1" value="0"><span class="val" id="vBreath"></span></label>
   <div class="hint">S = toggle · Werte live</div>
 </div>
 <script>
 const C=document.getElementById('c'),$=C.getContext('2d');
 let W,H,stars=[];
+
+// === Neon-Partikel aus der Kugel ===
+const NEON=['#ff006e','#ff5400','#ffbe0b','#00f5d4','#00bbf9','#9b5de5','#f15bb5','#fee440','#00cffd','#ff4d6d'];
+let ballParts=[];   // Partikel IN der Kugel
+let freeParts=[];   // Partikel die rausgefallen sind
+let partTimer=0;    // Zähler für verzögerten Start
+
+// === Kohärentes Atmen (5.5s ein, 5.5s aus) ===
+const BREATH={in:5.5, out:5.5};
+let breathStart=0, breathOn=false;
+let audioCtx=null, noiseSource=null, noiseGain=null, filterNode=null;
+
+function calcBreathWave(elapsed){
+  let cycle=BREATH.in+BREATH.out;
+  let phase=elapsed%cycle;
+  if(phase<BREATH.in) return Math.sin((phase/BREATH.in)*Math.PI-Math.PI/2);
+  return Math.sin(Math.PI/2-((phase-BREATH.in)/BREATH.out)*Math.PI);
+}
+
+function initBreathAudio(){
+  if(audioCtx) return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  // White noise buffer
+  let buf=audioCtx.createBuffer(1,audioCtx.sampleRate*2,audioCtx.sampleRate);
+  let d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  noiseSource=audioCtx.createBufferSource();
+  noiseSource.buffer=buf; noiseSource.loop=true;
+  // Bandpass filter
+  filterNode=audioCtx.createBiquadFilter();
+  filterNode.type='bandpass'; filterNode.frequency.value=350; filterNode.Q.value=0.8;
+  // Gain
+  noiseGain=audioCtx.createGain(); noiseGain.gain.value=0;
+  noiseSource.connect(filterNode);
+  filterNode.connect(noiseGain);
+  noiseGain.connect(audioCtx.destination);
+  noiseSource.start();
+}
+
+function stopBreathAudio(){
+  if(!audioCtx) return;
+  noiseGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.1);
+}
 
 function resize(){
   W=C.width=window.innerWidth*devicePixelRatio;
@@ -66,9 +112,29 @@ function draw(){
   // Slider values (read once per frame)
   let _t=+rTitle.value, _s=+rSub.value, _g=+rTag.value, _G=+rGap.value, _l=+rLine.value, _a=+rArc.value;
   let _b=+rBall.value, _gw=+rGlow.value, _sh=+rShine.value;
+  let _parts=+rParts.value, _br=+rBreath.value;
   let _fT=fTitle.value+',sans-serif', _fS=fSub.value+',sans-serif', _fG=fTag.value+',sans-serif';
   vTitle.textContent=_t;vSub.textContent=_s;vTag.textContent=_g;vGap.textContent=_G;vLine.textContent=_l;vArc.textContent=_a;
   vBall.textContent=_b;vGlow.textContent=_gw;vShine.textContent=_sh;
+  vParts.textContent=_parts;vBreath.textContent=_br?'AN':'AUS';
+
+  // Atem-Toggle
+  if(_br && !breathOn){breathOn=true; breathStart=Date.now()/1000; initBreathAudio();}
+  if(!_br && breathOn){breathOn=false; stopBreathAudio();}
+
+  // Atem-Welle berechnen
+  let bw=0, breathMod=0;
+  if(breathOn){
+    bw=calcBreathWave(Date.now()/1000-breathStart);
+    breathMod=(bw+1)/2; // 0=aus, 1=ein
+    // Audio updaten
+    if(audioCtx && noiseGain){
+      let t2=audioCtx.currentTime;
+      noiseGain.gain.setTargetAtTime(breathMod*0.22,t2,0.08);
+      filterNode.frequency.setTargetAtTime(350+breathMod*400,t2,0.08);
+      filterNode.Q.setTargetAtTime(0.8+breathMod*0.5,t2,0.08);
+    }
+  }
   $.clearRect(0,0,W,H);
   $.fillStyle='#0A0A0F';$.fillRect(0,0,W,H);
 
@@ -153,30 +219,127 @@ function draw(){
   let by=44-Math.abs(ballT)*5;
   bx=Math.max(-28,Math.min(-6,bx));
 
-  // === Glow: gestaffelte Kreise statt shadowBlur (Safari-sicher) ===
-  let glowR=_b+_gw*0.8;  // Glow-Radius skaliert mit Slider
+  // Atem: Kugel-Radius pulsiert ±8%
+  let breathR=_b;
+  if(breathOn) breathR=_b*(1+bw*0.08);
+
+  // === Atem-Nebel (Cyan #25a2a2) — vor dem Ball ===
+  if(breathOn){
+    let nebelBase=breathR+2;
+    let nebelExpand=(0.35+breathMod*0.65)*breathR*0.4;
+    for(let layer=0;layer<3;layer++){
+      let off=layer*breathR*0.06;
+      let innerR=nebelBase+off;
+      let outerR=nebelBase+nebelExpand+off*0.5;
+      let na=(0.12+breathMod*0.1)*(1-layer*0.3);
+      let ng=$.createRadialGradient(bx,by,innerR,bx,by,outerR);
+      ng.addColorStop(0,`rgba(37,162,162,${na})`);
+      ng.addColorStop(0.4,`rgba(37,162,162,${na*0.5})`);
+      ng.addColorStop(1,'rgba(37,162,162,0)');
+      $.fillStyle=ng;
+      $.beginPath();$.arc(bx,by,outerR,0,Math.PI*2);$.fill();
+    }
+  }
+
+  // === Glow: gestaffelte Kreise ===
   for(let i=5;i>=1;i--){
-    let r=_b+(_gw*0.8)*(i/5);
+    let r=breathR+(_gw*0.8)*(i/5);
     let a=_sh*0.12*(1-i/6);
     $.fillStyle=`rgba(253,210,80,${a})`;
     $.beginPath();$.arc(bx,by,r,0,Math.PI*2);$.fill();
   }
 
-  // === Rim ring — Shine steuert Helligkeit + Dicke ===
+  // === Rim ring ===
   $.strokeStyle=`rgba(253,220,120,${_sh})`;
   $.lineWidth=1+_sh*2.5;
-  $.beginPath();$.arc(bx,by,_b+1.5,0,Math.PI*2);$.stroke();
+  $.beginPath();$.arc(bx,by,breathR+1.5,0,Math.PI*2);$.stroke();
 
-  // === Ball body (konstanter dunkler Kern) ===
-  let ballG=$.createRadialGradient(bx-_b*0.3,by-_b*0.3,_b*0.1,bx,by,_b);
+  // === Ball body ===
+  let ballG=$.createRadialGradient(bx-breathR*0.3,by-breathR*0.3,breathR*0.1,bx,by,breathR);
   ballG.addColorStop(0,'rgba(140,90,30,0.7)');
   ballG.addColorStop(0.6,'rgba(200,140,45,0.85)');
   ballG.addColorStop(1,`rgba(253,200,80,${0.4+_sh*0.6})`);
-  $.fillStyle=ballG;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
+  $.fillStyle=ballG;$.beginPath();$.arc(bx,by,breathR,0,Math.PI*2);$.fill();
 
-  // === Specular highlight (Lichtpunkt oben links) ===
+  // === Neon-Partikel IN der Kugel ===
+  partTimer++;
+  if(_parts>0 && partTimer>180 && ballParts.length<_parts){
+    if(Math.random()<0.12){
+      let ang=Math.random()*Math.PI*2;
+      let spd=0.3+Math.random()*0.6;
+      ballParts.push({
+        x:bx, y:by-breathR*0.3,
+        vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd,
+        life:1, decay:0.001+Math.random()*0.002,
+        size:0.8+Math.random()*1.5,
+        color:NEON[Math.floor(Math.random()*NEON.length)],
+        age:0
+      });
+    }
+  }
+  // Max begrenzen wenn Slider runtergedreht
+  while(ballParts.length>_parts && _parts>=0) ballParts.shift();
+
+  // Clip auf Kugelbereich
+  $.save();
+  $.beginPath();$.arc(bx,by,breathR-0.5,0,Math.PI*2);$.clip();
+
+  for(let i=ballParts.length-1;i>=0;i--){
+    let p=ballParts[i];
+    p.vy+=0.015;
+    p.vx*=0.985; p.vy*=0.985;
+    p.vx+=(Math.random()-0.5)*0.05;
+    p.vy+=(Math.random()-0.5)*0.05;
+    p.x+=p.vx; p.y+=p.vy;
+    p.life-=p.decay; p.age++;
+
+    let dx=p.x-bx, dy=p.y-by;
+    let dist=Math.sqrt(dx*dx+dy*dy);
+    let maxR=breathR*0.85;
+    if(dist>maxR){
+      let nx=dx/dist, ny=dy/dist;
+      p.x=bx+nx*maxR; p.y=by+ny*maxR;
+      let dot=p.vx*nx+p.vy*ny;
+      if(dot>0){p.vx-=2*dot*nx; p.vy-=2*dot*ny;}
+      p.vx*=0.5; p.vy*=0.5;
+      if(partTimer>600 && ny>0.5 && Math.random()<0.05){
+        freeParts.push({x:p.x, y:p.y, vx:p.vx*0.5, vy:Math.abs(p.vy)*0.3+0.2,
+          life:p.life, decay:0.003+Math.random()*0.003, size:p.size, color:p.color, age:0});
+        ballParts.splice(i,1); continue;
+      }
+    }
+    if(p.life<=0){ballParts.splice(i,1); continue;}
+
+    $.globalAlpha=p.life*0.9;
+    $.fillStyle=p.color;
+    $.beginPath();$.arc(p.x,p.y,p.size,0,Math.PI*2);$.fill();
+    if(p.age<6){
+      $.globalAlpha=(1-p.age/6)*0.5;
+      $.fillStyle='#fff';
+      $.beginPath();$.arc(p.x,p.y,p.size*1.8,0,Math.PI*2);$.fill();
+    }
+  }
+  $.globalAlpha=1;
+  $.restore(); // end clip
+
+  // === Specular highlight ===
   $.fillStyle=`rgba(255,245,200,${0.2+_sh*0.6})`;
-  $.beginPath();$.arc(bx-_b*0.3,by-_b*0.35,_b*0.3,0,Math.PI*2);$.fill();
+  $.beginPath();$.arc(bx-breathR*0.3,by-breathR*0.35,breathR*0.3,0,Math.PI*2);$.fill();
+
+  // === Freie Partikel ===
+  for(let i=freeParts.length-1;i>=0;i--){
+    let p=freeParts[i];
+    p.vy+=0.04; p.vx*=0.97;
+    p.x+=p.vx; p.y+=p.vy;
+    p.life-=p.decay; p.age++;
+    if(p.life<=0 || p.y>80){freeParts.splice(i,1); continue;}
+    $.globalAlpha=p.life*0.8;
+    $.fillStyle=p.color;
+    $.beginPath();$.arc(p.x,p.y,p.size*0.8,0,Math.PI*2);$.fill();
+    $.globalAlpha=p.life*0.2;
+    $.beginPath();$.arc(p.x,p.y,p.size*2.5,0,Math.PI*2);$.fill();
+  }
+  $.globalAlpha=1;
   $.restore();
   $.restore();
 
@@ -231,6 +394,10 @@ function draw(){
 
 draw();
 document.addEventListener('keydown',e=>{if(e.key==='s'||e.key==='S')ctrl.classList.toggle('show')});
+// AudioContext braucht User-Gesture (Safari)
+function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
+document.addEventListener('click',resumeAudio);
+document.addEventListener('keydown',resumeAudio);
 </script>
 </body>
 </html>
