@@ -187,12 +187,12 @@ function draw(){
     }
   }
 
-  // Basis-Arc (immer sichtbar)
-  $.strokeStyle='rgba(15,170,182,0.04)';$.lineWidth=14;
+  // Basis-Arc (rot wie im Spiel)
+  $.strokeStyle='rgba(255,85,85,0.04)';$.lineWidth=14;
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
   let arcG=$.createLinearGradient(-arcR,-arcR*0.6,arcR*0.82,arcR*1.05);
-  arcG.addColorStop(0,'rgba(15,170,182,0.02)');arcG.addColorStop(0.35,'rgba(15,170,182,0.18)');
-  arcG.addColorStop(0.7,'rgba(222,156,54,0.12)');arcG.addColorStop(1,'rgba(222,156,54,0.03)');
+  arcG.addColorStop(0,'rgba(255,68,68,0.02)');arcG.addColorStop(0.35,'rgba(255,85,85,0.2)');
+  arcG.addColorStop(0.7,'rgba(255,136,0,0.12)');arcG.addColorStop(1,'rgba(255,68,68,0.03)');
   $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
 
@@ -201,37 +201,53 @@ function draw(){
   glowG.addColorStop(0,'rgba(222,156,54,0.06)');glowG.addColorStop(1,'rgba(222,156,54,0)');
   $.fillStyle=glowG;$.fillRect(-120,-20,240,200);
 
-  // === Ship ===
+  // === Ship (Game-Style: grüner Umriss wie im Spiel) ===
   let shipBob=Math.sin(t*2)*3;
   let swing=Math.sin(t*1.2)*0.18;
+  let SR=35; // Ship-Radius (skaliert von SHIP_R=10)
+  let shipCY=-120; // Schiff-Zentrum Y
 
   $.save();$.translate(0,shipBob);
-  // Hull
-  $.fillStyle='#0FAAB6';$.beginPath();
-  $.moveTo(0,-160);$.lineTo(-22,-100);$.lineTo(-12,-108);$.lineTo(-12,-88);
-  $.lineTo(12,-88);$.lineTo(12,-108);$.lineTo(22,-100);$.closePath();$.fill();
-  // Cockpit
-  $.fillStyle='#0D8A94';$.beginPath();$.ellipse(0,-130,7,9,0,0,Math.PI*2);$.fill();
-  $.fillStyle='rgba(15,170,182,0.5)';$.beginPath();$.ellipse(0,-132,5,6,0,0,Math.PI*2);$.fill();
-  // Struts
-  $.fillStyle='rgba(15,170,182,0.5)';$.fillRect(-20,-88,40,5);
-  // Flame
-  let flicker=0.6+0.4*Math.sin(t*12);
-  $.fillStyle=`rgba(222,156,54,${flicker*0.8})`;
-  $.beginPath();$.moveTo(-8,-83);$.lineTo(0,-55-Math.sin(t*8)*5);$.lineTo(8,-83);$.closePath();$.fill();
-  $.fillStyle=`rgba(253,191,85,${flicker*0.6})`;
-  $.beginPath();$.moveTo(-5,-83);$.lineTo(0,-65-Math.sin(t*10)*4);$.lineTo(5,-83);$.closePath();$.fill();
+  // Ship hull — grüner Stroke wie im Spiel
+  $.shadowColor='#0f0';$.shadowBlur=8;
+  $.strokeStyle='#0f0';$.lineWidth=3;
+  $.beginPath();
+  $.moveTo(0, shipCY-SR);                    // Spitze
+  $.lineTo(-SR*0.7, shipCY+SR*0.7);          // Links unten
+  $.lineTo(-SR*0.3, shipCY+SR*0.4);          // Links Engine
+  $.lineTo(SR*0.3, shipCY+SR*0.4);           // Rechts Engine
+  $.lineTo(SR*0.7, shipCY+SR*0.7);           // Rechts unten
+  $.closePath();$.stroke();
+  $.shadowBlur=0;
+
+  // Flame (Game-Style: orange + gelb V-Form, flackert)
+  let fl=SR*(0.8+Math.random()*0.6);  // Zufällige Flammen-Länge
+  let flameY=shipCY+SR*0.5;
+  // Outer flame (orange)
+  $.strokeStyle='#f80';$.lineWidth=3;
+  $.beginPath();
+  $.moveTo(-SR*0.25, flameY);
+  $.lineTo(0, flameY+fl);
+  $.lineTo(SR*0.25, flameY);
+  $.stroke();
+  // Inner flame (gelb)
+  $.strokeStyle='#ff0';$.lineWidth=1.5;
+  $.beginPath();
+  $.moveTo(-SR*0.1, flameY);
+  $.lineTo(0, flameY+fl*0.6);
+  $.lineTo(SR*0.1, flameY);
+  $.stroke();
   $.restore();
 
   // === Tether + swinging J-Hook ===
   $.save();$.translate(0,shipBob);
   let tetherLen=80;
-  let ax=0,ay=-83+5;
+  let ax=0, ay=shipCY+SR*0.7+5;  // Tether startet am Schiffsboden
   let jx=Math.sin(swing)*tetherLen;
   let jy=ay+Math.cos(swing)*tetherLen;
 
-  // Tether line
-  $.strokeStyle='rgba(15,170,182,0.4)';$.lineWidth=2;$.setLineDash([6,4]);
+  // Tether line (Cyan wie im Spiel)
+  $.strokeStyle='rgba(0,170,170,0.5)';$.lineWidth=2;$.setLineDash([6,4]);
   $.beginPath();$.moveTo(ax,ay);$.quadraticCurveTo(ax+jx*0.3,ay+(jy-ay)*0.5,jx,jy);$.stroke();
   $.setLineDash([]);
 
