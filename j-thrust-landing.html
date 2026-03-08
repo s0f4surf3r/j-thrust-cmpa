@@ -154,13 +154,47 @@ function draw(){
   $.save();$.translate(cx,cy);$.scale(sc,sc);
 
   // === Arc — wraps logo + title + subtitle ===
+  // Atem: Arc-Radius pulsiert ±3%
+  let arcR=breathOn ? _a*(1+bw*0.03) : _a;
+
+  // Atem-Nebel am äußeren Kreis (Cyan wie M-Sphere)
+  if(breathOn){
+    let nebelInner=arcR-5;
+    let nebelExpand=(0.3+breathMod*0.7)*arcR*0.15;
+    let nebelOuter=arcR+nebelExpand;
+    // 3 Layer wie in M-Sphere
+    for(let layer=0;layer<3;layer++){
+      let off=layer*arcR*0.02;
+      let na=(0.15+breathMod*0.12)*(1-layer*0.3);
+      let ng=$.createRadialGradient(0,0,nebelInner-off,0,0,nebelOuter+off);
+      ng.addColorStop(0,'rgba(37,162,162,0)');
+      ng.addColorStop(0.3,`rgba(37,162,162,${na*0.3})`);
+      ng.addColorStop(0.6,`rgba(37,162,162,${na})`);
+      ng.addColorStop(0.85,`rgba(37,162,162,${na*0.4})`);
+      ng.addColorStop(1,'rgba(37,162,162,0)');
+      $.fillStyle=ng;
+      $.beginPath();$.arc(0,0,nebelOuter+off,0,Math.PI*2);$.fill();
+    }
+    // Rotierende Streifen (5 Stück wie M-Sphere)
+    let breathTime=Date.now()/1000-breathStart;
+    for(let s=0;s<5;s++){
+      let angle=(s/5)*Math.PI*2+breathTime*0.05;
+      let sx=Math.cos(angle)*(arcR+nebelExpand*0.5);
+      let sy=Math.sin(angle)*(arcR+nebelExpand*0.5);
+      let streakR=arcR*0.08*(0.5+0.5*Math.sin(angle*3+breathTime));
+      $.fillStyle=`rgba(37,162,162,${breathMod*0.12})`;
+      $.beginPath();$.arc(sx,sy,streakR,0,Math.PI*2);$.fill();
+    }
+  }
+
+  // Basis-Arc (immer sichtbar)
   $.strokeStyle='rgba(15,170,182,0.04)';$.lineWidth=14;
-  $.beginPath();$.arc(0,0,_a,Math.PI*0.6,Math.PI*0.4);$.stroke();
-  let arcG=$.createLinearGradient(-_a,-_a*0.6,_a*0.82,_a*1.05);
+  $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
+  let arcG=$.createLinearGradient(-arcR,-arcR*0.6,arcR*0.82,arcR*1.05);
   arcG.addColorStop(0,'rgba(15,170,182,0.02)');arcG.addColorStop(0.35,'rgba(15,170,182,0.18)');
   arcG.addColorStop(0.7,'rgba(222,156,54,0.12)');arcG.addColorStop(1,'rgba(222,156,54,0.03)');
   $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
-  $.beginPath();$.arc(0,0,_a,Math.PI*0.6,Math.PI*0.4);$.stroke();
+  $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
 
   // Warm glow bridge between hook and title
   let glowG=$.createRadialGradient(0,80,10,0,80,100);
