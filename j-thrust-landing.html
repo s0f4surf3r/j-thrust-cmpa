@@ -152,22 +152,31 @@ function draw(){
   let bx=-16+ballT*10;
   let by=44-Math.abs(ballT)*5;
   bx=Math.max(-28,Math.min(-6,bx));
-  // Aura (Shine = Rand-Intensität)
-  $.shadowColor=`rgba(253,220,120,${_sh})`;$.shadowBlur=_gw/sc;
-  $.fillStyle=`rgba(222,156,54,${0.15*_sh})`;$.beginPath();$.arc(bx,by,_b*2.5,0,Math.PI*2);$.fill();
-  // Rim ring (leuchtet mit Shine)
-  $.shadowBlur=_gw*0.4/sc;
-  $.strokeStyle=`rgba(253,220,120,${_sh*0.9})`;$.lineWidth=1.5;
-  $.beginPath();$.arc(bx,by,_b+1,0,Math.PI*2);$.stroke();
-  $.shadowBlur=0;
-  // Ball body (konstant, dunklerer Kern)
+
+  // === Glow: gestaffelte Kreise statt shadowBlur (Safari-sicher) ===
+  let glowR=_b+_gw*0.8;  // Glow-Radius skaliert mit Slider
+  for(let i=5;i>=1;i--){
+    let r=_b+(_gw*0.8)*(i/5);
+    let a=_sh*0.12*(1-i/6);
+    $.fillStyle=`rgba(253,210,80,${a})`;
+    $.beginPath();$.arc(bx,by,r,0,Math.PI*2);$.fill();
+  }
+
+  // === Rim ring — Shine steuert Helligkeit + Dicke ===
+  $.strokeStyle=`rgba(253,220,120,${_sh})`;
+  $.lineWidth=1+_sh*2.5;
+  $.beginPath();$.arc(bx,by,_b+1.5,0,Math.PI*2);$.stroke();
+
+  // === Ball body (konstanter dunkler Kern) ===
   let ballG=$.createRadialGradient(bx-_b*0.3,by-_b*0.3,_b*0.1,bx,by,_b);
-  ballG.addColorStop(0,'rgba(180,120,40,0.6)');
-  ballG.addColorStop(0.7,`rgba(222,156,54,0.85)`);
-  ballG.addColorStop(1,`rgba(253,200,80,${0.5+_sh*0.5})`);
+  ballG.addColorStop(0,'rgba(140,90,30,0.7)');
+  ballG.addColorStop(0.6,'rgba(200,140,45,0.85)');
+  ballG.addColorStop(1,`rgba(253,200,80,${0.4+_sh*0.6})`);
   $.fillStyle=ballG;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
-  // Specular highlight (kleiner Lichtpunkt oben links)
-  $.fillStyle=`rgba(255,240,180,${0.3+_sh*0.4})`;$.beginPath();$.arc(bx-_b*0.3,by-_b*0.35,_b*0.25,0,Math.PI*2);$.fill();
+
+  // === Specular highlight (Lichtpunkt oben links) ===
+  $.fillStyle=`rgba(255,245,200,${0.2+_sh*0.6})`;
+  $.beginPath();$.arc(bx-_b*0.3,by-_b*0.35,_b*0.3,0,Math.PI*2);$.fill();
   $.restore();
   $.restore();
 
