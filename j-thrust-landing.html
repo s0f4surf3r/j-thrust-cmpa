@@ -152,17 +152,22 @@ function draw(){
   let bx=-16+ballT*10;
   let by=44-Math.abs(ballT)*5;
   bx=Math.max(-28,Math.min(-6,bx));
-  // Deep glow (shadowBlur durch Scale kompensieren)
-  $.shadowColor=`rgba(253,191,85,${_sh})`;$.shadowBlur=_gw/sc;
-  $.fillStyle=`rgba(222,156,54,${0.2*_sh})`;$.beginPath();$.arc(bx,by,_b*2.5,0,Math.PI*2);$.fill();
-  // Mid glow
-  $.shadowBlur=_gw*0.5/sc;
-  $.fillStyle=`rgba(253,191,85,${0.35*_sh})`;$.beginPath();$.arc(bx,by,_b*1.6,0,Math.PI*2);$.fill();
+  // Aura (Shine = Rand-Intensität)
+  $.shadowColor=`rgba(253,220,120,${_sh})`;$.shadowBlur=_gw/sc;
+  $.fillStyle=`rgba(222,156,54,${0.15*_sh})`;$.beginPath();$.arc(bx,by,_b*2.5,0,Math.PI*2);$.fill();
+  // Rim ring (leuchtet mit Shine)
+  $.shadowBlur=_gw*0.4/sc;
+  $.strokeStyle=`rgba(253,220,120,${_sh*0.9})`;$.lineWidth=1.5;
+  $.beginPath();$.arc(bx,by,_b+1,0,Math.PI*2);$.stroke();
   $.shadowBlur=0;
-  // Ball
-  $.fillStyle=`rgba(222,156,54,${_sh})`;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
-  // Hot core
-  $.fillStyle=`rgba(253,220,120,${Math.min(1,_sh*1.1)})`;$.beginPath();$.arc(bx,by,_b*0.45,0,Math.PI*2);$.fill();
+  // Ball body (konstant, dunklerer Kern)
+  let ballG=$.createRadialGradient(bx-_b*0.3,by-_b*0.3,_b*0.1,bx,by,_b);
+  ballG.addColorStop(0,'rgba(180,120,40,0.6)');
+  ballG.addColorStop(0.7,`rgba(222,156,54,0.85)`);
+  ballG.addColorStop(1,`rgba(253,200,80,${0.5+_sh*0.5})`);
+  $.fillStyle=ballG;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
+  // Specular highlight (kleiner Lichtpunkt oben links)
+  $.fillStyle=`rgba(255,240,180,${0.3+_sh*0.4})`;$.beginPath();$.arc(bx-_b*0.3,by-_b*0.35,_b*0.25,0,Math.PI*2);$.fill();
   $.restore();
   $.restore();
 
@@ -208,7 +213,7 @@ function draw(){
   // Tagline
   $.font=`300 ${tagSize}px ${_fG}`;
   $.letterSpacing=Math.round(tagSize*0.2)+'px';
-  $.fillStyle='rgba(15,210,225,0.75)';
+  $.fillStyle='rgba(15,170,182,0.4)';
   $.fillText('GRAVITY  ·  REACH  ·  STRUCTURE',cx,tagY);
   $.letterSpacing='0px';
 
