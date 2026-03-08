@@ -250,9 +250,9 @@ function draw(){
   }
 
   // === Rim ring ===
-  $.strokeStyle=`rgba(253,220,120,${_sh})`;
-  $.lineWidth=1+_sh*2.5;
-  $.beginPath();$.arc(bx,by,breathR+1.5,0,Math.PI*2);$.stroke();
+  $.strokeStyle=`rgba(253,220,120,${_sh*0.7})`;
+  $.lineWidth=0.5+_sh*0.8;
+  $.beginPath();$.arc(bx,by,breathR+1,0,Math.PI*2);$.stroke();
 
   // === Ball body ===
   let ballG=$.createRadialGradient(bx-breathR*0.3,by-breathR*0.3,breathR*0.1,bx,by,breathR);
