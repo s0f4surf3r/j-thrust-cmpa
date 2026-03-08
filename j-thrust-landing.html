@@ -157,12 +157,11 @@ function draw(){
   // Atem: Arc-Radius pulsiert ±3%
   let arcR=breathOn ? _a*(1+bw*0.03) : _a;
 
-  // Atem-Nebel am äußeren Kreis (Cyan wie M-Sphere)
+  // Atem-Nebel am äußeren Kreis (HINTER dem Arc)
   if(breathOn){
     let nebelInner=arcR-5;
     let nebelExpand=(0.3+breathMod*0.7)*arcR*0.15;
     let nebelOuter=arcR+nebelExpand;
-    // 3 Layer wie in M-Sphere
     for(let layer=0;layer<3;layer++){
       let off=layer*arcR*0.02;
       let na=(0.15+breathMod*0.12)*(1-layer*0.3);
@@ -175,7 +174,6 @@ function draw(){
       $.fillStyle=ng;
       $.beginPath();$.arc(0,0,nebelOuter+off,0,Math.PI*2);$.fill();
     }
-    // Rotierende Streifen (5 Stück wie M-Sphere)
     let breathTime=Date.now()/1000-breathStart;
     for(let s=0;s<5;s++){
       let angle=(s/5)*Math.PI*2+breathTime*0.05;
@@ -187,7 +185,7 @@ function draw(){
     }
   }
 
-  // Basis-Arc (helles Korallenrot wie Counter-Ring in M-Sphere)
+  // Basis-Arc — IM VORDERGRUND über dem Nebel
   $.strokeStyle='rgba(255,70,90,0.06)';$.lineWidth=14;
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
   $.strokeStyle='rgba(255,70,90,0.25)';$.lineWidth=2;$.lineCap='round';
