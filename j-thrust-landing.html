@@ -188,12 +188,9 @@ function draw(){
   }
 
   // Basis-Arc (helles Korallenrot wie Counter-Ring in M-Sphere)
-  $.strokeStyle='rgba(255,70,90,0.05)';$.lineWidth=14;
+  $.strokeStyle='rgba(255,70,90,0.06)';$.lineWidth=14;
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
-  let arcG=$.createLinearGradient(-arcR,-arcR*0.6,arcR*0.82,arcR*1.05);
-  arcG.addColorStop(0,'rgba(255,70,90,0.03)');arcG.addColorStop(0.35,'rgba(255,70,90,0.25)');
-  arcG.addColorStop(0.7,'rgba(255,90,70,0.15)');arcG.addColorStop(1,'rgba(255,70,90,0.03)');
-  $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
+  $.strokeStyle='rgba(255,70,90,0.25)';$.lineWidth=2;$.lineCap='round';
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
 
   // Warm glow bridge between hook and title
