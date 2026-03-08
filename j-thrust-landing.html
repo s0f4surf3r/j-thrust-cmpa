@@ -11,10 +11,30 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#0A0A0F;cursor:default}
 canvas{display:block;width:100%;height:100%}
+#ctrl{display:none;position:fixed;top:20px;right:20px;background:rgba(10,10,15,0.92);
+  border:1px solid rgba(15,170,182,0.3);border-radius:10px;padding:16px 20px;
+  font:13px Montserrat,sans-serif;color:#8aa020;z-index:10;min-width:260px}
+#ctrl.show{display:block}
+#ctrl label{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+#ctrl input[type=range]{width:130px;accent-color:#0FAAB6}
+#ctrl .val{color:#c8e030;min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+#ctrl .hint{color:rgba(15,170,182,0.4);font-size:10px;text-align:center;margin-top:8px}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="ctrl">
+  <label>Title <input type="range" id="rTitle" min="0.04" max="0.14" step="0.005" value="0.08"><span class="val" id="vTitle"></span></label>
+  <label>Subtitle <input type="range" id="rSub" min="0.15" max="0.55" step="0.01" value="0.32"><span class="val" id="vSub"></span></label>
+  <label>Tagline <input type="range" id="rTag" min="0.06" max="0.30" step="0.005" value="0.155"><span class="val" id="vTag"></span></label>
+  <label>Gap <input type="range" id="rGap" min="0.04" max="0.25" step="0.005" value="0.12"><span class="val" id="vGap"></span></label>
+  <label>Line W <input type="range" id="rLine" min="0.3" max="1.2" step="0.05" value="0.8"><span class="val" id="vLine"></span></label>
+  <label>Arc R <input type="range" id="rArc" min="150" max="300" step="5" value="220"><span class="val" id="vArc"></span></label>
+  <label>Ball Size <input type="range" id="rBall" min="3" max="14" step="0.5" value="7"><span class="val" id="vBall"></span></label>
+  <label>Glow <input type="range" id="rGlow" min="5" max="60" step="1" value="35"><span class="val" id="vGlow"></span></label>
+  <label>Shine <input type="range" id="rShine" min="0.2" max="1.0" step="0.05" value="0.9"><span class="val" id="vShine"></span></label>
+  <div class="hint">S = toggle · Werte live</div>
+</div>
 <script>
 const C=document.getElementById('c'),$=C.getContext('2d');
 let W,H,stars=[];
@@ -35,6 +55,11 @@ resize();
 
 function draw(){
   requestAnimationFrame(draw);
+  // Slider values (read once per frame)
+  let _t=+rTitle.value, _s=+rSub.value, _g=+rTag.value, _G=+rGap.value, _l=+rLine.value, _a=+rArc.value;
+  let _b=+rBall.value, _gw=+rGlow.value, _sh=+rShine.value;
+  vTitle.textContent=_t;vSub.textContent=_s;vTag.textContent=_g;vGap.textContent=_G;vLine.textContent=_l;vArc.textContent=_a;
+  vBall.textContent=_b;vGlow.textContent=_gw;vShine.textContent=_sh;
   $.clearRect(0,0,W,H);
   $.fillStyle='#0A0A0F';$.fillRect(0,0,W,H);
 
@@ -55,12 +80,12 @@ function draw(){
 
   // === Arc — wraps logo + title + subtitle ===
   $.strokeStyle='rgba(15,170,182,0.04)';$.lineWidth=14;
-  $.beginPath();$.arc(0,0,220,Math.PI*0.6,Math.PI*0.4);$.stroke();
-  let arcG=$.createLinearGradient(-220,-130,180,230);
+  $.beginPath();$.arc(0,0,_a,Math.PI*0.6,Math.PI*0.4);$.stroke();
+  let arcG=$.createLinearGradient(-_a,-_a*0.6,_a*0.82,_a*1.05);
   arcG.addColorStop(0,'rgba(15,170,182,0.02)');arcG.addColorStop(0.35,'rgba(15,170,182,0.18)');
   arcG.addColorStop(0.7,'rgba(222,156,54,0.12)');arcG.addColorStop(1,'rgba(222,156,54,0.03)');
   $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
-  $.beginPath();$.arc(0,0,220,Math.PI*0.6,Math.PI*0.4);$.stroke();
+  $.beginPath();$.arc(0,0,_a,Math.PI*0.6,Math.PI*0.4);$.stroke();
 
   // Warm glow bridge between hook and title
   let glowG=$.createRadialGradient(0,80,10,0,80,100);
@@ -118,18 +143,26 @@ function draw(){
   let bx=-16+ballT*10;
   let by=44-Math.abs(ballT)*5;
   bx=Math.max(-28,Math.min(-6,bx));
-  $.fillStyle='rgba(222,156,54,0.7)';$.beginPath();$.arc(bx,by,6,0,Math.PI*2);$.fill();
-  $.fillStyle='rgba(253,191,85,0.5)';$.beginPath();$.arc(bx,by,3,0,Math.PI*2);$.fill();
+  // Deep glow
+  $.shadowColor='#FDBF55';$.shadowBlur=_gw;
+  $.fillStyle=`rgba(222,156,54,${0.15*_sh})`;$.beginPath();$.arc(bx,by,_b*2.3,0,Math.PI*2);$.fill();
+  // Mid glow
+  $.fillStyle=`rgba(222,156,54,${0.3*_sh})`;$.beginPath();$.arc(bx,by,_b*1.6,0,Math.PI*2);$.fill();
+  $.shadowBlur=0;
+  // Ball
+  $.fillStyle=`rgba(222,156,54,${_sh})`;$.beginPath();$.arc(bx,by,_b,0,Math.PI*2);$.fill();
+  // Hot core
+  $.fillStyle=`rgba(253,220,120,${_sh*0.85})`;$.beginPath();$.arc(bx,by,_b*0.5,0,Math.PI*2);$.fill();
   $.restore();
   $.restore();
 
   $.restore(); // end main scale
 
-  // === Lockup — ein Gap G regiert alle Abstände ===
-  let fontSize=Math.max(32,Math.min(80,W*0.08));
-  let subSize=Math.round(fontSize*0.32);
-  let tagSize=Math.round(fontSize*0.155);
-  let G=Math.round(fontSize*0.12);               // einheitlicher optischer Abstand
+  // === Lockup — Slider-gesteuert ===
+  let fontSize=Math.max(32,Math.min(120,W*_t));
+  let subSize=Math.round(fontSize*_s);
+  let tagSize=Math.round(fontSize*_g);
+  let G=Math.round(fontSize*_G);
   let titleY=cy+sc*135;
 
   // Positionen: G zwischen Baseline/Capline jedes Elements
@@ -149,7 +182,7 @@ function draw(){
   $.shadowBlur=0;
 
   // Accent line — 80% Titelbreite, 2px
-  let lineW=titleW*0.8;
+  let lineW=titleW*_l;
   let lg=$.createLinearGradient(cx-lineW/2,0,cx+lineW/2,0);
   lg.addColorStop(0,'rgba(15,170,182,0.05)');lg.addColorStop(0.3,'rgba(15,170,182,0.5)');
   lg.addColorStop(0.7,'rgba(222,156,54,0.5)');lg.addColorStop(1,'rgba(222,156,54,0.05)');
@@ -165,7 +198,7 @@ function draw(){
   // Tagline
   $.font=`300 ${tagSize}px Montserrat,sans-serif`;
   $.letterSpacing=Math.round(tagSize*0.2)+'px';
-  $.fillStyle='rgba(15,170,182,0.4)';
+  $.fillStyle='rgba(15,210,225,0.75)';
   $.fillText('GRAVITY  ·  REACH  ·  STRUCTURE',cx,tagY);
   $.letterSpacing='0px';
 
@@ -173,6 +206,7 @@ function draw(){
 }
 
 draw();
+document.addEventListener('keydown',e=>{if(e.key==='s'||e.key==='S')ctrl.classList.toggle('show')});
 </script>
 </body>
 </html>
