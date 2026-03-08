@@ -22,6 +22,10 @@ canvas{display:block;width:100%;height:100%}
 #ctrl select{background:#151520;color:#c8e030;border:1px solid rgba(15,170,182,0.3);
   border-radius:4px;padding:2px 4px;font-size:11px;width:130px}
 #ctrl .sep{border:none;border-top:1px solid rgba(15,170,182,0.15);margin:8px 0}
+#ctrl{max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#toggleBtn{position:fixed;bottom:16px;right:16px;z-index:11;width:44px;height:44px;
+  border-radius:50%;border:1px solid rgba(15,170,182,0.4);background:rgba(10,10,15,0.85);
+  color:#8aa020;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -46,6 +50,7 @@ canvas{display:block;width:100%;height:100%}
   <label>Atmen <input type="range" id="rBreath" min="0" max="1" step="1" value="1"><span class="val" id="vBreath"></span></label>
   <div class="hint">S = toggle · Werte live</div>
 </div>
+<button id="toggleBtn" onclick="ctrl.classList.toggle('show')">S</button>
 <script>
 const C=document.getElementById('c'),$=C.getContext('2d');
 let W,H,stars=[];
