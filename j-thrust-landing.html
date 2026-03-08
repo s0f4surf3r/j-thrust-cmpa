@@ -359,8 +359,14 @@ function draw(){
       if(dot>0){p.vx-=2*dot*nx; p.vy-=2*dot*ny;}
       p.vx*=0.5; p.vy*=0.5;
       if(partTimer>600 && ny>0.5 && Math.random()<0.05){
-        freeParts.push({x:p.x, y:p.y, vx:p.vx*0.5, vy:Math.abs(p.vy)*0.3+0.2,
-          life:p.life, decay:0.003+Math.random()*0.003, size:p.size, color:p.color, age:0});
+        // Konvertiere in Screen-Koordinaten
+        let rot=swing*0.5;
+        let rx=p.x*Math.cos(rot)-p.y*Math.sin(rot)+jx;
+        let ry=p.x*Math.sin(rot)+p.y*Math.cos(rot)+jy+shipBob;
+        let svx=(p.vx+swing*2)*sc;  // Schwung-Impuls vom Pendel
+        let svy=Math.abs(p.vy)*0.3*sc+0.5;
+        freeParts.push({x:cx+rx*sc, y:cy+ry*sc, vx:svx, vy:svy,
+          life:1, decay:0.002+Math.random()*0.002, size:p.size*sc, color:p.color, age:0});
         ballParts.splice(i,1); continue;
       }
     }
@@ -382,20 +388,7 @@ function draw(){
   $.fillStyle=`rgba(255,245,200,${0.2+_sh*0.6})`;
   $.beginPath();$.arc(bx-breathR*0.3,by-breathR*0.35,breathR*0.3,0,Math.PI*2);$.fill();
 
-  // === Freie Partikel ===
-  for(let i=freeParts.length-1;i>=0;i--){
-    let p=freeParts[i];
-    p.vy+=0.04; p.vx*=0.97;
-    p.x+=p.vx; p.y+=p.vy;
-    p.life-=p.decay; p.age++;
-    if(p.life<=0 || p.y>80){freeParts.splice(i,1); continue;}
-    $.globalAlpha=p.life*0.8;
-    $.fillStyle=p.color;
-    $.beginPath();$.arc(p.x,p.y,p.size*0.8,0,Math.PI*2);$.fill();
-    $.globalAlpha=p.life*0.2;
-    $.beginPath();$.arc(p.x,p.y,p.size*2.5,0,Math.PI*2);$.fill();
-  }
-  $.globalAlpha=1;
+  // (freie Partikel werden nach dem Text gezeichnet)
   $.restore();
   $.restore();
 
@@ -446,6 +439,24 @@ function draw(){
   $.letterSpacing='0px';
 
   $.textAlign='left';
+
+  // === Freie Partikel (Screen-Koordinaten, ÜBER den Texten) ===
+  for(let i=freeParts.length-1;i>=0;i--){
+    let p=freeParts[i];
+    p.vy+=0.12;  // Gravitation (Screen-Pixel)
+    p.vx*=0.995;  // Wenig Reibung → weites Streuen
+    p.vx+=(Math.random()-0.5)*0.3;  // Brownian
+    p.x+=p.vx; p.y+=p.vy;
+    p.life-=p.decay; p.age++;
+    if(p.life<=0 || p.y>H+20){freeParts.splice(i,1); continue;}
+    $.globalAlpha=p.life*0.85;
+    $.fillStyle=p.color;
+    $.beginPath();$.arc(p.x,p.y,p.size,0,Math.PI*2);$.fill();
+    // Glow
+    $.globalAlpha=p.life*0.25;
+    $.beginPath();$.arc(p.x,p.y,p.size*3,0,Math.PI*2);$.fill();
+  }
+  $.globalAlpha=1;
 }
 
 draw();
