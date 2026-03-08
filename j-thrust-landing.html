@@ -27,23 +27,23 @@ canvas{display:block;width:100%;height:100%}
 <body>
 <canvas id="c"></canvas>
 <div id="ctrl">
-  <label>Title <input type="range" id="rTitle" min="0.04" max="0.14" step="0.005" value="0.08"><span class="val" id="vTitle"></span></label>
-  <label>Subtitle <input type="range" id="rSub" min="0.15" max="0.55" step="0.01" value="0.32"><span class="val" id="vSub"></span></label>
-  <label>Tagline <input type="range" id="rTag" min="0.06" max="0.30" step="0.005" value="0.155"><span class="val" id="vTag"></span></label>
+  <label>Title <input type="range" id="rTitle" min="0.04" max="0.14" step="0.005" value="0.045"><span class="val" id="vTitle"></span></label>
+  <label>Subtitle <input type="range" id="rSub" min="0.15" max="0.55" step="0.01" value="0.29"><span class="val" id="vSub"></span></label>
+  <label>Tagline <input type="range" id="rTag" min="0.06" max="0.30" step="0.005" value="0.145"><span class="val" id="vTag"></span></label>
   <label>Gap <input type="range" id="rGap" min="0.04" max="0.25" step="0.005" value="0.12"><span class="val" id="vGap"></span></label>
   <label>Line W <input type="range" id="rLine" min="0.3" max="1.2" step="0.05" value="0.8"><span class="val" id="vLine"></span></label>
   <label>Arc R <input type="range" id="rArc" min="150" max="300" step="5" value="220"><span class="val" id="vArc"></span></label>
   <hr class="sep">
-  <label>Title Font <select id="fTitle"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
-  <label>Sub Font <select id="fSub"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
-  <label>Tag Font <select id="fTag"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <label>Title Font <select id="fTitle"><option>Montserrat</option><option selected>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <label>Sub Font <select id="fSub"><option selected>Montserrat</option><option>Raleway</option><option>Poppins</option><option>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
+  <label>Tag Font <select id="fTag"><option>Montserrat</option><option>Raleway</option><option>Poppins</option><option selected>Inter</option><option>Outfit</option><option>Space Grotesk</option><option>Sora</option><option>DM Sans</option></select></label>
   <hr class="sep">
-  <label>Ball Size <input type="range" id="rBall" min="3" max="14" step="0.5" value="7"><span class="val" id="vBall"></span></label>
-  <label>Glow <input type="range" id="rGlow" min="5" max="60" step="1" value="35"><span class="val" id="vGlow"></span></label>
-  <label>Shine <input type="range" id="rShine" min="0.2" max="1.0" step="0.05" value="0.9"><span class="val" id="vShine"></span></label>
-  <label>Partikel <input type="range" id="rParts" min="0" max="50" step="1" value="25"><span class="val" id="vParts"></span></label>
+  <label>Ball Size <input type="range" id="rBall" min="3" max="14" step="0.5" value="4"><span class="val" id="vBall"></span></label>
+  <label>Glow <input type="range" id="rGlow" min="5" max="60" step="1" value="23"><span class="val" id="vGlow"></span></label>
+  <label>Shine <input type="range" id="rShine" min="0.2" max="1.0" step="0.05" value="0.5"><span class="val" id="vShine"></span></label>
+  <label>Partikel <input type="range" id="rParts" min="0" max="50" step="1" value="10"><span class="val" id="vParts"></span></label>
   <hr class="sep">
-  <label>Atmen <input type="range" id="rBreath" min="0" max="1" step="1" value="0"><span class="val" id="vBreath"></span></label>
+  <label>Atmen <input type="range" id="rBreath" min="0" max="1" step="1" value="1"><span class="val" id="vBreath"></span></label>
   <div class="hint">S = toggle · Werte live</div>
 </div>
 <script>
@@ -187,12 +187,12 @@ function draw(){
     }
   }
 
-  // Basis-Arc (rot wie im Spiel)
-  $.strokeStyle='rgba(255,85,85,0.04)';$.lineWidth=14;
+  // Basis-Arc (helles Korallenrot wie Counter-Ring in M-Sphere)
+  $.strokeStyle='rgba(255,70,90,0.05)';$.lineWidth=14;
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
   let arcG=$.createLinearGradient(-arcR,-arcR*0.6,arcR*0.82,arcR*1.05);
-  arcG.addColorStop(0,'rgba(255,68,68,0.02)');arcG.addColorStop(0.35,'rgba(255,85,85,0.2)');
-  arcG.addColorStop(0.7,'rgba(255,136,0,0.12)');arcG.addColorStop(1,'rgba(255,68,68,0.03)');
+  arcG.addColorStop(0,'rgba(255,70,90,0.03)');arcG.addColorStop(0.35,'rgba(255,70,90,0.25)');
+  arcG.addColorStop(0.7,'rgba(255,90,70,0.15)');arcG.addColorStop(1,'rgba(255,70,90,0.03)');
   $.strokeStyle=arcG;$.lineWidth=2;$.lineCap='round';
   $.beginPath();$.arc(0,0,arcR,Math.PI*0.6,Math.PI*0.4);$.stroke();
 
@@ -201,42 +201,50 @@ function draw(){
   glowG.addColorStop(0,'rgba(222,156,54,0.06)');glowG.addColorStop(1,'rgba(222,156,54,0)');
   $.fillStyle=glowG;$.fillRect(-120,-20,240,200);
 
-  // === Ship (Game-Style: grüner Umriss wie im Spiel) ===
+  // === Ship (Levi-Style: gelber Umriss) ===
   let shipBob=Math.sin(t*2)*3;
   let swing=Math.sin(t*1.2)*0.18;
   let SR=35; // Ship-Radius (skaliert von SHIP_R=10)
   let shipCY=-120; // Schiff-Zentrum Y
 
   $.save();$.translate(0,shipBob);
-  // Ship hull — grüner Stroke wie im Spiel
-  $.shadowColor='#0f0';$.shadowBlur=8;
-  $.strokeStyle='#0f0';$.lineWidth=3;
+  // Ship hull — gelb wie Levi-Version
+  $.shadowColor='#c8e030';$.shadowBlur=6;
+  $.strokeStyle='#c8e030';$.lineWidth=2.5;
   $.beginPath();
-  $.moveTo(0, shipCY-SR);                    // Spitze
-  $.lineTo(-SR*0.7, shipCY+SR*0.7);          // Links unten
-  $.lineTo(-SR*0.3, shipCY+SR*0.4);          // Links Engine
-  $.lineTo(SR*0.3, shipCY+SR*0.4);           // Rechts Engine
-  $.lineTo(SR*0.7, shipCY+SR*0.7);           // Rechts unten
+  $.moveTo(0, shipCY-SR);
+  $.lineTo(-SR*0.7, shipCY+SR*0.7);
+  $.lineTo(-SR*0.3, shipCY+SR*0.4);
+  $.lineTo(SR*0.3, shipCY+SR*0.4);
+  $.lineTo(SR*0.7, shipCY+SR*0.7);
   $.closePath();$.stroke();
   $.shadowBlur=0;
 
-  // Flame (Game-Style: orange + gelb V-Form, flackert)
-  let fl=SR*(0.8+Math.random()*0.6);  // Zufällige Flammen-Länge
+  // Flame (organisch, wie echtes Feuer)
+  let flicker=0.6+0.4*Math.sin(t*12);
   let flameY=shipCY+SR*0.5;
-  // Outer flame (orange)
-  $.strokeStyle='#f80';$.lineWidth=3;
+  let flLen=SR*(0.7+Math.sin(t*8)*0.15+Math.random()*0.2);
+  // Äußere Flamme (Gold/Orange, gefüllt)
+  $.fillStyle=`rgba(222,156,54,${flicker*0.8})`;
   $.beginPath();
   $.moveTo(-SR*0.25, flameY);
-  $.lineTo(0, flameY+fl);
+  $.lineTo(0, flameY+flLen);
   $.lineTo(SR*0.25, flameY);
-  $.stroke();
-  // Inner flame (gelb)
-  $.strokeStyle='#ff0';$.lineWidth=1.5;
+  $.closePath();$.fill();
+  // Innere Flamme (helleres Gold)
+  $.fillStyle=`rgba(253,191,85,${flicker*0.6})`;
   $.beginPath();
-  $.moveTo(-SR*0.1, flameY);
-  $.lineTo(0, flameY+fl*0.6);
-  $.lineTo(SR*0.1, flameY);
-  $.stroke();
+  $.moveTo(-SR*0.12, flameY);
+  $.lineTo(0, flameY+flLen*0.65);
+  $.lineTo(SR*0.12, flameY);
+  $.closePath();$.fill();
+  // Heißer Kern (fast weiß)
+  $.fillStyle=`rgba(255,240,180,${flicker*0.4})`;
+  $.beginPath();
+  $.moveTo(-SR*0.05, flameY);
+  $.lineTo(0, flameY+flLen*0.35);
+  $.lineTo(SR*0.05, flameY);
+  $.closePath();$.fill();
   $.restore();
 
   // === Tether + swinging J-Hook ===
