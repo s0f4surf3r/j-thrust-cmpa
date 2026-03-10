@@ -208,7 +208,7 @@ function draw(){
   let SR=35; // für Tether-Anschluss
 
   $.save();$.translate(0,shipBob);
-  $.save();$.translate(0,shipCY);
+  $.save();$.translate(0,shipCY);$.scale(0.6,0.6);
 
   // Rocket body — metallic gradient
   let rg=$.createLinearGradient(-20,0,20,0);
@@ -285,7 +285,7 @@ function draw(){
   // === Tether + swinging J-Hook ===
   $.save();$.translate(0,shipBob);
   let tetherLen=80;
-  let ax=0, ay=shipCY+43+5;  // Tether startet unter der Düse
+  let ax=0, ay=shipCY+43*0.6+5;  // Tether startet unter der Düse
   let jx=Math.sin(swing)*tetherLen;
   let jy=ay+Math.cos(swing)*tetherLen;
 
