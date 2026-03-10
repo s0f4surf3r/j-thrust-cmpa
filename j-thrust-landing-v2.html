@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J-THRUST — V2 Animated Logo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0A0A0F}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const C=document.getElementById('c'),$=C.getContext('2d');
+let W,H,stars=[];
+
+function resize(){
+  W=C.width=window.innerWidth*devicePixelRatio;
+  H=C.height=window.innerHeight*devicePixelRatio;
+  $.scale(devicePixelRatio,devicePixelRatio);
+  W=window.innerWidth;H=window.innerHeight;
+  C.style.width=W+'px';C.style.height=H+'px';
+  stars=[];
+  for(let i=0;i<200;i++) stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()<0.85?1:1.5,b:0.15+Math.random()*0.5});
+}
+window.addEventListener('resize',resize);
+resize();
+
+// === Animation-Zustand ===
+// 5s Loop bei 60fps = 300 Frames, Ping-Pong
+const LOOP_DUR=5; // Sekunden
+
+function draw(){
+  requestAnimationFrame(draw);
+  $.clearRect(0,0,W,H);
+  $.fillStyle='#0A0A0F';$.fillRect(0,0,W,H);
+
+  // Stars
+  let now=Date.now()*0.001;
+  for(let s of stars){
+    $.fillStyle=`rgba(180,180,220,${s.b*(0.7+0.3*Math.sin(now+s.x))})`;
+    $.fillRect(s.x,(s.y+Date.now()*0.005*s.b)%H,s.s,s.s);
+  }
+
+  let cx=W/2, cy=H*0.42;
+  let sc=Math.min(W/600,H/700)*0.75;
+
+  // Ping-pong progress: 0→1→0 über LOOP_DUR Sekunden
+  let raw=(now%LOOP_DUR)/LOOP_DUR;
+  let prog=raw<0.5 ? raw*2 : 2-raw*2; // 0→1→0
+  // Easing (smooth)
+  prog=prog*prog*(3-2*prog); // smoothstep
+
+  $.save();
+  $.translate(cx,cy);
+  $.scale(sc,sc);
+
+  // === Orbit-Kreis (obere Hälfte) ===
+  $.strokeStyle='rgba(15,170,182,0.08)';$.lineWidth=12;
+  $.beginPath();$.arc(0,30,200,Math.PI*1.15,Math.PI*-0.15);$.stroke();
+  $.strokeStyle='rgba(15,170,182,0.2)';$.lineWidth=2;$.lineCap='round';
+  $.beginPath();$.arc(0,30,200,Math.PI*1.15,Math.PI*-0.15);$.stroke();
+
+  // === Rocket (Illustrator-Style, 3D-ish) ===
+  let rocketY=-160;
+
+  $.save();$.translate(0,rocketY);
+
+  // Rocket body — abgerundet, weniger spitz als Arrow
+  // 3D-Effekt: Bevel + metallic shading
+  let rg=$.createLinearGradient(-20,0,20,0);
+  rg.addColorStop(0,'#0888a0');
+  rg.addColorStop(0.3,'#0FAAB6');
+  rg.addColorStop(0.5,'#5dd8e0');
+  rg.addColorStop(0.7,'#0FAAB6');
+  rg.addColorStop(1,'#0888a0');
+
+  // Nase (abgerundet)
+  $.fillStyle=rg;
+  $.beginPath();
+  $.moveTo(0,-55);
+  $.quadraticCurveTo(-18,-20,-20,0);
+  $.lineTo(-20,35);
+  $.lineTo(20,35);
+  $.lineTo(20,0);
+  $.quadraticCurveTo(18,-20,0,-55);
+  $.closePath();$.fill();
+
+  // 3D-Highlight
+  let hl=$.createLinearGradient(-5,-50,10,-10);
+  hl.addColorStop(0,'rgba(255,255,255,0.25)');
+  hl.addColorStop(1,'rgba(255,255,255,0)');
+  $.fillStyle=hl;
+  $.beginPath();
+  $.moveTo(-3,-50);
+  $.quadraticCurveTo(-12,-15,-8,10);
+  $.lineTo(2,10);
+  $.quadraticCurveTo(5,-15,-3,-50);
+  $.closePath();$.fill();
+
+  // Fenster
+  $.fillStyle='#065a64';
+  $.beginPath();$.ellipse(0,-15,8,10,0,0,Math.PI*2);$.fill();
+  $.fillStyle='rgba(93,216,224,0.4)';
+  $.beginPath();$.ellipse(-2,-17,5,6,0,0,Math.PI*2);$.fill();
+
+  // Seitenflügel
+  $.fillStyle='#0888a0';
+  $.beginPath();$.moveTo(-20,15);$.lineTo(-32,40);$.lineTo(-20,35);$.closePath();$.fill();
+  $.beginPath();$.moveTo(20,15);$.lineTo(32,40);$.lineTo(20,35);$.closePath();$.fill();
+  // Flügel-Highlight
+  $.fillStyle='rgba(15,170,182,0.3)';
+  $.beginPath();$.moveTo(20,15);$.lineTo(32,40);$.lineTo(20,35);$.closePath();$.fill();
+
+  // Düse
+  $.fillStyle='#076068';
+  $.fillRect(-12,35,24,8);
+  $.fillStyle='#0FAAB6';
+  $.fillRect(-10,37,20,4);
+
+  $.restore(); // end rocket
+
+  // === Exhaust Flammen (3 Stufen, flickernd) ===
+  let exhaustTop=rocketY+43;
+  let flameLen=80+Math.sin(now*8)*8; // Basis-Länge
+  // Flammen werden länger mit progress (erreichen das J)
+  let flameReach=flameLen+prog*120;
+  let flicker1=0.7+0.3*Math.sin(now*12);
+  let flicker2=0.6+0.4*Math.sin(now*15+1);
+  let flicker3=0.5+0.5*Math.sin(now*10+2);
+
+  // Flamme 3 (breiteste, am schwächsten)
+  $.fillStyle=`rgba(255,140,0,${0.15*flicker3})`;
+  $.beginPath();
+  $.moveTo(-18,exhaustTop);
+  $.quadraticCurveTo(-12,exhaustTop+flameReach*0.6, 0,exhaustTop+flameReach*0.9);
+  $.quadraticCurveTo(12,exhaustTop+flameReach*0.6, 18,exhaustTop);
+  $.closePath();$.fill();
+
+  // Flamme 2 (mittel)
+  $.fillStyle=`rgba(255,170,30,${0.35*flicker2})`;
+  $.beginPath();
+  $.moveTo(-11,exhaustTop);
+  $.quadraticCurveTo(-7,exhaustTop+flameReach*0.5, 0,exhaustTop+flameReach*0.75);
+  $.quadraticCurveTo(7,exhaustTop+flameReach*0.5, 11,exhaustTop);
+  $.closePath();$.fill();
+
+  // Flamme 1 (schmalste, hellste)
+  $.fillStyle=`rgba(255,220,80,${0.6*flicker1})`;
+  $.beginPath();
+  $.moveTo(-6,exhaustTop);
+  $.quadraticCurveTo(-3,exhaustTop+flameReach*0.4, 0,exhaustTop+flameReach*0.55);
+  $.quadraticCurveTo(3,exhaustTop+flameReach*0.4, 6,exhaustTop);
+  $.closePath();$.fill();
+
+  // Heißer Kern
+  $.fillStyle=`rgba(255,250,200,${0.4*flicker1})`;
+  $.beginPath();
+  $.moveTo(-3,exhaustTop);
+  $.lineTo(0,exhaustTop+flameReach*0.3);
+  $.lineTo(3,exhaustTop);
+  $.closePath();$.fill();
+
+  // === String von Rocket zum J ===
+  let stringTop=exhaustTop+5;
+  let jTop=70;
+  $.strokeStyle='rgba(15,170,182,0.35)';$.lineWidth=1.5;
+  $.setLineDash([4,3]);
+  $.beginPath();$.moveTo(0,stringTop);$.lineTo(0,jTop);$.stroke();
+  $.setLineDash([]);
+
+  // === Das J (blau oben, gelb unten) ===
+  // Animation: Flammen färben den blauen Teil gelb
+  // prog=0: J ist blau oben / gelb unten (original)
+  // prog=1: J ist komplett gelb (Flammen haben alles erreicht)
+
+  let jW=24, jH=120;
+  let jX=-jW/2, jY=jTop;
+  let hookR=40; // Radius der J-Kurve
+  let stemH=70; // Gerade Stamm-Höhe
+
+  // Farbübergang: blaue→gelbe Grenze wandert mit prog nach oben
+  let colorBoundary=jY+stemH*(1-prog); // prog=0: Grenze unten, prog=1: Grenze oben
+
+  // J-Stamm (gerader Teil)
+  // Oberer Teil (blau oder gelb je nach prog)
+  let stemGrad=$.createLinearGradient(0,jY,0,jY+stemH);
+  stemGrad.addColorStop(0, prog>0.9 ? '#FDBF55' : '#0FAAB6');
+  let transPoint=Math.max(0,Math.min(1,1-prog));
+  stemGrad.addColorStop(Math.max(0,transPoint-0.1),'#0FAAB6');
+  stemGrad.addColorStop(transPoint,'#DE9C36');
+  stemGrad.addColorStop(1,'#DE9C36');
+
+  // Zeichne das J als zusammenhängenden Pfad
+  $.fillStyle=stemGrad;
+  $.beginPath();
+  // Stamm außen links
+  $.moveTo(jX, jY);
+  $.lineTo(jX, jY+stemH);
+  // Kurve nach links
+  $.quadraticCurveTo(jX, jY+stemH+hookR, jX-hookR*0.8, jY+stemH+hookR);
+  // Unterkante der Kurve
+  $.quadraticCurveTo(jX-hookR*1.3, jY+stemH+hookR, jX-hookR*1.3, jY+stemH+hookR*0.3);
+  // Innenkante hoch
+  $.lineTo(jX-hookR*1.3+jW, jY+stemH+hookR*0.3);
+  // Innere Kurve
+  $.quadraticCurveTo(jX-hookR*1.3+jW, jY+stemH+hookR*0.7, jX-hookR*0.4, jY+stemH+hookR*0.55);
+  $.quadraticCurveTo(jX+jW*0.3, jY+stemH+hookR*0.3, jX+jW, jY+stemH);
+  // Stamm innen rechts hoch
+  $.lineTo(jX+jW, jY);
+  $.closePath();$.fill();
+
+  // 3D-Bevel auf dem J
+  $.fillStyle=`rgba(255,255,255,${0.08+prog*0.05})`;
+  $.fillRect(jX+2, jY+2, 6, stemH-4);
+
+  // Serif oben
+  $.fillStyle=prog>0.8 ? '#FDBF55' : '#0FAAB6';
+  $.fillRect(jX-8, jY-4, jW+16, 6);
+
+  // Flammen-Glow auf dem J wenn prog > 0
+  if(prog>0.05){
+    let glowY=jY+stemH*(1-prog);
+    let fg=$.createRadialGradient(0,glowY,2,0,glowY,30);
+    fg.addColorStop(0,`rgba(255,200,60,${0.4*prog*flicker1})`);
+    fg.addColorStop(1,'rgba(255,200,60,0)');
+    $.fillStyle=fg;
+    $.fillRect(-40,glowY-30,80,60);
+  }
+
+  // === Ball in der J-Kurve ===
+  let ballX=jX-hookR*0.9;
+  let ballY=jY+stemH+hookR*0.5;
+  // Ball wird wärmer mit prog
+  let ballColor=prog>0.7 ? `rgba(253,191,85,${0.7+prog*0.3})` : 'rgba(222,156,54,0.8)';
+  $.fillStyle=ballColor;
+  $.beginPath();$.arc(ballX,ballY,6,0,Math.PI*2);$.fill();
+  // Ball-Glow
+  $.fillStyle=`rgba(253,200,80,${0.15+prog*0.2})`;
+  $.beginPath();$.arc(ballX,ballY,12,0,Math.PI*2);$.fill();
+  // Specular
+  $.fillStyle='rgba(255,240,200,0.4)';
+  $.beginPath();$.arc(ballX-2,ballY-2,2,0,Math.PI*2);$.fill();
+
+  $.restore(); // end main scale
+
+  // === Text ===
+  $.textAlign='center';
+  let fontSize=Math.max(12,Math.min(80,W*0.06));
+  $.font=`700 ${fontSize}px Raleway,sans-serif`;
+
+  // J-THRUST mit Gradient
+  let tg=$.createLinearGradient(cx-150,0,cx+150,0);
+  tg.addColorStop(0,'#0FAAB6');
+  tg.addColorStop(0.5,'#5dd8e0');
+  tg.addColorStop(0.8,'#DE9C36');
+  tg.addColorStop(1,'#FDBF55');
+
+  let textY=cy+sc*280;
+  $.fillStyle=tg;
+  $.fillText('J-THRUST',cx,textY);
+
+  // Subtitle
+  let subSize=Math.round(fontSize*0.25);
+  $.font=`300 ${subSize}px Raleway,sans-serif`;
+  $.fillStyle='rgba(15,170,182,0.5)';
+  $.letterSpacing=Math.round(subSize*0.4)+'px';
+  $.fillText('LEVI EDITION',cx,textY+fontSize*0.5);
+  $.letterSpacing='0px';
+
+  $.textAlign='left';
+}
+
+draw();
+</script>
+</body>
+</html>
