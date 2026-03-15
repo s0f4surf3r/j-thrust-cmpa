@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: j-thrust-duel
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node j-thrust-server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
